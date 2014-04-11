@@ -5,34 +5,33 @@
 module.exports = function (grunt) {
 
   var componentList = [
-    // Shims
-    'modernizr/modernizr.js',
 
     // Gaming Libs
-    'melonJS/build/melonJS-1.0.0.js',
-    '../../../node_modules/easystarjs/bin/easystar-0.1.6.js', // <- blech
+    'jawsjs/jaws.js',
     'howlerjs/howler.js',
+    'tweenjs/build/tween.min.js',
+    '../../../node_modules/easystarjs/bin/easystar-0.1.6.js'//, // <- blech
 
     // jQuery and Related
-    'jquery/jquery.js',
-    'messenger/build/js/messenger.js',
+    // 'jquery/jquery.js',
+    // 'messenger/build/js/messenger.js',
 
-    // bootstrap
-    'bootstrap/dist/js/bootstrap.js',
+    // // bootstrap
+    // 'bootstrap/dist/js/bootstrap.js',
 
-    // AngularJS libraries
-    'angular/angular.js',
-    'angular-cookies/angular-cookies.js',
-    'angular-resource/angular-resource.js',
-    'angular-sanitize/angular-sanitize.js',
-    'angular-animate/angular-animate.js',
+    // // AngularJS libraries
+    // 'angular/angular.js',
+    // 'angular-cookies/angular-cookies.js',
+    // 'angular-resource/angular-resource.js',
+    // 'angular-sanitize/angular-sanitize.js',
+    // 'angular-animate/angular-animate.js',
 
-    //NProgress
-    'nprogress/nprogress.js',
+    // //NProgress
+    // 'nprogress/nprogress.js',
 
-    // utilities
-    'lodash/dist/lodash.js',
-    'moment/moment.js'
+    // // utilities
+    // 'lodash/dist/lodash.js',
+    // 'moment/moment.js'
   ],
 
   watchedFiles = [

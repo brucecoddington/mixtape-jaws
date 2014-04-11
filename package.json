@@ -1,8 +1,8 @@
 {
-  "name": "mixtape-melon",
-  "title": "MixtapeMelon",
+  "name": "mixtape-jaws",
+  "title": "mixtape-jaws",
   "main": "./api/server.js",
-  "description": "Compilation of Angular and MelonJS.",
+  "description": "Compilation of Angular and JawsJs.",
   "version": "0.0.1",
   "dependencies": {
     "express": "3.2.6",
