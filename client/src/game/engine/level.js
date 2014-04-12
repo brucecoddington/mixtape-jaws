@@ -2,7 +2,7 @@ angular.module('game.engine.level', [
   'game.engine.profiler'
 ])
 
-.factory('level', function (profiler, LevelTransitionScreenState) {
+.factory('level', function (profiler, levelTransistionState) {
 
   var level = {
 
@@ -18,9 +18,9 @@ angular.module('game.engine.level', [
    /**
     * inits a new level using json data: sets level specific variables 
     */
-    init: function initLevel (leveldata) {
-      profiler.start('initLevel');
-      $log.debug('initLevel...');
+    init: function init (leveldata) {
+      profiler.start('level.init');
+      $log.debug('level.init...');
       
       if (!leveldata) {
         $log.debug('ERROR: Missing level data!');
@@ -68,21 +68,21 @@ angular.module('game.engine.level', [
       viewport.max_x = leveldata.width * leveldata.tilewidth;
       viewport.max_y = (leveldata.height + 2) * leveldata.tileheight; // extend past the level data: fell_too_far + 1;
 
-      $log.debug('initLevel complete.');
+      $log.debug('level.init complete.');
       $log.debug('Total tiles in the world: ' + world_complexity);
 
-      profiler.end('initLevel');
+      profiler.end('level.init');
     },
 
     /**
      * Triggered when the level has been successfully cleared.
      * Switches to the transition state before loading the next level.
      */
-    complete: function levelComplete() {
+    complete: function complete() {
       $log.debug('Level ' + level.current_level_number + ' complete!');
       sprite.updateGui(goldGui.instance, player.gold); // immediate update to proper value
       level.pendingLevelComplete = false;
-      jaws.switchGameState(LevelTransitionScreenState);
+      jaws.switchGameState(levelTransistionState);
     },
 
     // this is called when enemies reach their destination and damage the castle
@@ -99,7 +99,7 @@ angular.module('game.engine.level', [
         
         if (enemyWave.none_left) {
           $log.debug('And there are no pending waves! LEVEL COMPLETE SUCCESS!');
-          transition.mode = transition.levelComplete;
+          transition.mode = transition.level.complete;
           level.pendingLevelComplete = true; // handle edge case: we hit >1 in the same frame
         }
       }

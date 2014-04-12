@@ -1,120 +1,104 @@
 angular.module('game.states.transitions', [])
   
-  // GAME STATE: LEVEL TRANSITIONS
-  /**
-   * A jaws state object for the display in between levels (and game over) screen.
-   * Used to display messages like "game over" or "congratulations"
-   */
-  .factory('LevelTransitionScreenState', function () {
-  
-    return function LevelTransitionScreenState() {
+/**
+ * A jaws state object for the display in between levels (and game over) screen.
+ * Used to display messages like "game over" or "congratulations"
+ */
+.factory('levelTransistionState', function () {
 
-      this.setup = function () {
+  var levelTransition = {
+    
+    setup: function () {
 
-        $log.debug('Game State: transition after level ' + level.current_level_number);
+      $log.debug('Game State: transition after level ' + level.current_level_number);
 
-        // special message that tells C# whether or not to send back button events to js or handle natively
-        console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
+      // clear the stopwatch timer if any
+      if (timer.game_timer) {
+        window.clearInterval(timer.game_timer);
+      }
 
-        // wp8: try to reclaim some RAM that was used during inits/asset downloading
-        if (typeof(window.CollectGarbage) == "function") {
-          window.CollectGarbage();
-          if (debugmode)
-            log('LevelTransitionScreenState.setup just did a CollectGarbage()');
-        }
+      transition.endtime = new Date().valueOf() + transition.length_ms; // five seconds
 
-        // clear the stopwatch timer if any
-        if (game_timer)
-          window.clearInterval(game_timer);
+      timer.game_paused = true; // no clock updates
 
-        transition.endtime = new Date().valueOf() + transition.length_ms; // five seconds
+      if (transition.mode == transition.gameOver) {
+        sfx.play('Defeat');
+      }
 
-        game_paused = true; // no clock updates
+      if (transition.mode == transition.level.complete) {
+        level.current_level_number++; // upcoming level
+        sfx.play('Victory');
+      }
 
-        if (transition.mode == transition.gameOver) {
-          //sfxdefeat();
-          sfx.play('Defeat');
-        }
+    }, 
 
-        if (transition.mode == transition.levelComplete) {
-          level.current_level_number++; // upcoming level
-          //sfxvictory()
-          sfx.play('Victory');
+    update: function update() {
 
-        }
+      if (particleSystem.particles_enabled) {
+        particles.update();
+      }
 
-      }; // transition screen setup function
+      // fireworks!
+      if (Math.random() > 0.92) {
+        particleSystem.start(jaws.width / 4 + Math.random() * jaws.width / 2, jaws.height / 2 - 200 + (Math.random() * 400));
+      }
 
-      // transition screen
-      this.update = function () {
+      if (background.use_parallax_background) {
+        // update parallax background scroll
+        background.title_background.camera_x += 4;
+      }
 
-        // wobble just for fun
-        // gui.msgbox_sprite.scaleTo(0.75 + (Math.sin(new Date().valueOf() * 0.001) / (Math.PI * 2)));
+      if (transition.endtime < (new Date().valueOf())) {
+        $log.debug('transition time is up');
 
-        if (particleSystem.particles_enabled)
-          updateParticles();
+        timer.game_paused = false; // keyboard doesn't reset this
 
-        // fireworks!
-        if (Math.random() > 0.92) {
-          particleSystem.start(jaws.width / 4 + Math.random() * jaws.width / 2, jaws.height / 2 - 200 + (Math.random() * 400));
-        }
+        if (transition.mode === transition.gameOver) {
+          $log.debug('transitioning from game over to titlescreen');
+          game.gameOver(false);
 
-        if (use_parallax_background) {
-          // update parallax background scroll
-          titlebackground.camera_x += 4;
-        }
-
-        if (transition.endtime < (new Date().valueOf())) {
-
-          if (debugmode)
-            log('transition time is up');
-
-          game_paused = false; // keyboard doesn't reset this
-
-          if (transition.mode == transition.gameOver) {
-            if (debugmode)
-              log('transitioning from game over to titlescreen');
-            gameOver(false);
-          } else {
-            if (level[level.current_level_number]) {
-              if (debugmode)
-                log('about to play level ' + level.current_level_number);
-              //sfxstart();
-              jaws.switchGameState(PlayState); // begin the next level
-            } else {
-              if (debugmode)
-                log('no more level data: the user BEAT the game!');
-              gameOver(true);
-            }
-          }
-        }
-
-      }; // transition screen update function
-
-      this.draw = function () {
-
-        if (use_parallax_background)
-          titlebackground.draw();
-        gui.msgbox_sprite.draw();
-        if (transition.mode == transition.gameOver) {
-          gui.gameover_sprite.draw();
-          gui.youlose_sprite.draw();
         } else {
-          if (level[level.current_level_number]) // more to come?
-          {
-            //if (debugmode) log('Next world (level ' + level.current_level_number + ') exists...');
-            gui.level_complete_sprite.draw();
-          } else // game over: final level completed!
-          {
-            //if (debugmode) log('Next world (level ' + level.current_level_number + ') does not exist. GAME COMPLETED!');
-            gui.gameover_sprite.draw();
-            gui.game_won_sprite.draw();
+          
+          if (level[level.current_level_number]) {
+            $log.debug('about to play level ' + level.current_level_number);
+            jaws.switchGameState(playState); // begin the next level
+          
+          } else {
+            $log.debug('no more level data: the user BEAT the game!');
+            game.gameOver(true);
           }
         }
-        if (particleSystem.particles_enabled)
-          particleSystem.particles.draw();
+      }
 
-      }; // transition screen draw function
+    }, 
 
-    };
-  });
+    draw: function draw() {
+
+      if (background.use_parallax_background) {
+        background.title_background.draw();
+      }
+
+      gui.msgbox_sprite.draw();
+      
+      if (transition.mode == transition.gameOver) {
+        gui.gameover_sprite.draw();
+        gui.youlose_sprite.draw();
+      
+      } else {
+
+        if (level[level.current_level_number]) { // more to come?
+          gui.level_complete_sprite.draw();
+        } else { // game over: final level completed!
+          gui.gameover_sprite.draw();
+          gui.game_won_sprite.draw();
+        }
+      }
+
+      if (particleSystem.particles_enabled) {
+        particleSystem.particles.draw();
+      }
+    }
+  };
+
+  return levelTransition;
+});

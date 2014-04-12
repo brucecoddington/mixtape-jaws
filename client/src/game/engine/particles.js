@@ -137,8 +137,8 @@ angular.module('game.engine.particles', [])
       }
     },
 
-    clear: function clearParticles() {
-      $log.debug('clearParticles');
+    clear: function clear() {
+      $log.debug('particles.clear');
 
       angular.forEach(particleSystem.particles, function (p) {
         p.x = p.y = settings.farAway; // throw offscreen
@@ -149,7 +149,7 @@ angular.module('game.engine.particles', [])
     /**
      * steps the particle effects simulation
      */
-    update: function updateParticles() {
+    update: function particles.update() {
       if (!particleSystem.particles_enabled) {
         return;
       }

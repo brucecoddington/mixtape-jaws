@@ -12,9 +12,9 @@ angular.module('data.preload', [])
         "level2.png",
         "level3.png",
         "level-select-screen.png",
-        "titlebackground.png", // this is 1920x1080 and uses up about 4MB - if RAM is an issue, comment out this line and set use_parallax_background_titlescreen = false
+        "titlebackground.png", // this is 1920x1080 and uses up about 4MB - if RAM is an issue, comment out this line and set background.use_parallax_background_titlescreen = false
         "cinematic.png",
-        "particleSystem.particles.png",
+        "particles.png",
         "msgbox.png",
         "entities.png",
         "buildmenu.png",

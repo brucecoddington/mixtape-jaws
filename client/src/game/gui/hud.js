@@ -71,8 +71,8 @@ angular.module('game.gui.hud', [])
         if (hud.info_tag && hud.info_tag.length > 0) {
           timer.fps_framecount++;
 
-          if (timer.currentFrameTimestamp > (timer.fps_prev_timestamp + 1000)) {
-            timer.fps_prev_timestamp = timer.currentFrameTimestamp;
+          if (timer.current_frame_timestamp > (timer.fps_prev_timestamp + 1000)) {
+            timer.fps_prev_timestamp = timer.current_frame_timestamp;
             timer.fps_prev_framecount = timer.fps_framecount;
             timer.fps_framecount = 0;
 
@@ -81,12 +81,12 @@ angular.module('game.gui.hud', [])
               for (var pname in profiler.length) {
                 profilestring += '<br>' + pname + ':' + profiler.length[pname] + 'ms (max:' + profile_maxlen[pname] + 'ms)';
               }
-              profilestring += '<br>simstepsrequired: ' + simstepsrequired;
-              profilestring += '<br>unsimulatedms: ' + unsimulatedms;
-              profilestring += '<br>currentframems: ' + currentframems;
+              profilestring += '<br>timer.sim_steps_required: ' + timer.sim_steps_required;
+              profilestring += '<br>timer.unsimulated_dms: ' + timer.unsimulated_dms;
+              profilestring += '<br>timer.current_frame_ms: ' + timer.current_frame_ms;
               profilestring += '<br>last touched sprite: ' + debugTouchInfo;
               info_tag.innerHTML = "FPS: " + timer.fps_prev_framecount + profilestring +
-                '<br>timer.currentFrameTimestamp: ' + timer.currentFrameTimestamp;
+                '<br>timer.current_frame_timestamp: ' + timer.current_frame_timestamp;
             }
 
           } else {

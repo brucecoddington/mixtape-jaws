@@ -16,7 +16,7 @@ angular.module('game.gui', [
     credits_sprite: undefined, // on overlay image with all the credits / about screen
     font_sheet: undefined, // the numbers 0..9
     sprite_sheet: undefined, // GUI overlays like the credits screen
-    splash_sprite: undefined, // the splash screen graphic used during the TitleScreenState game state
+    splash_sprite: undefined, // the splash screen graphic used during the titleState game state
     level_select_sprite: undefined, // the map parchment level select dialog
     menu_sprite: undefined, // the un-wobbly menu menu sprite overlay
     level_complete_sprite: undefined, // the words "level complete"
@@ -25,9 +25,9 @@ angular.module('game.gui', [
     game_won_sprite: undefined, // the game over desciption for beating the game
     menu_item_selected: 0, // 0=PLAY 1=CREDITS
     title_frame_count: 0, // used for simple menu particle animation
-    splash_sprite_zoom: 0, // used only inside the TitleScreenState.update to zoom the logo in
-    showing_credits: false, // used in TitleScreenState
-    showing_level_select_screen: false, // used in TitleScreenState
+    splash_sprite_zoom: 0, // used only inside the titleState.update to zoom the logo in
+    showing_credits: false, // used in titleState
+    showing_level_select_screen: false, // used in titleState
     no_keys_pressed_last_frame: true, // only react to new keydowns
     credits_button_x: 400, // default: gets changed in liquidLayoutGUI
     gui_enabled: true, // score/time/count - if false no GUI at all

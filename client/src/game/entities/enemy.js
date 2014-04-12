@@ -57,11 +57,11 @@ angular.module('game.entities.enemy', [
     waveSpawnNextEntity: function waveSpawnNextEntity() {
 
       // avoid edge case race condition: ensure the game's up and running
-      if (!timer.currentFrameTimestamp) {
+      if (!timer.current_frame_timestamp) {
         return;
       }
 
-      $log.debug('Level:' + level.current_level_number + ' Wave:' + enemyWave.current + ' Ent:' + enemyWave.entitynum + ' at ' + timer.currentFrameTimestamp);
+      $log.debug('Level:' + level.current_level_number + ' Wave:' + enemyWave.current + ' Ent:' + enemyWave.entitynum + ' at ' + timer.current_frame_timestamp);
 
       if (!enemyWave.wave[level.current_level_number]) {
         $log.debug('No more levels in the wave data!');

@@ -45,7 +45,7 @@ angular.module('game.gui.tile', [
     click: function clickTile(tileX, tileY) {
       $log.debug('clickTile ' + tileX + ',' + tileY);
 
-      if (game_over) {
+      if (timer.game_over) {
         return; 
       }
 

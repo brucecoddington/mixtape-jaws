@@ -44,7 +44,7 @@ angular.module('game.engine.event', [
         }
       }
 
-      if (!viewport.instance || game_over) {
+      if (!viewport.instance || timer.game_over) {
         return; 
       }
 

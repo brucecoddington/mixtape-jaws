@@ -59,13 +59,13 @@ angular.module('game.engine.ai', [
           nme.nextPartyTime = 1; // now!
         }
 
-        if (nme.nextPartyTime <= timer.currentFrameTimestamp) {
+        if (nme.nextPartyTime <= timer.current_frame_timestamp) {
           nme.pendingParticles--;
 
           $log.debug('Entity time to Party');
 
           if (nme.pendingParticles > 0) {
-            nme.nextPartyTime = timer.currentFrameTimestamp + nme.PartyDelay + (Math.random() * nme.PartyDelayExtraVariance);
+            nme.nextPartyTime = timer.current_frame_timestamp + nme.PartyDelay + (Math.random() * nme.PartyDelayExtraVariance);
           }
 
           particleSystem.start(nme.x, nme.y + particleSystem.entity_particle_offset_y, nme.pendingParticleType);
@@ -122,7 +122,7 @@ angular.module('game.engine.ai', [
       if (nme.weapon && nme.enemySpriteList) {
 
         if (!nme.weapon.nextShootTime) {
-          nme.weapon.nextShootTime = timer.currentFrameTimestamp + 
+          nme.weapon.nextShootTime = timer.current_frame_timestamp + 
             (Math.random() * nme.weapon.shootDelay) + 
             (Math.random() * nme.weapon.shootDelayExtraVariance);
         }
@@ -139,10 +139,10 @@ angular.module('game.engine.ai', [
               // only good for top down sprites (tank game turrets etc)
               // lookAt(nme, nextone.x, nextone.y);
 
-              if (nme.weapon.nextShootTime < timer.currentFrameTimestamp) {
+              if (nme.weapon.nextShootTime < timer.current_frame_timestamp) {
                 $log.debug('Entity time to shoot');
 
-                nme.weapon.nextShootTime = timer.currentFrameTimestamp + 
+                nme.weapon.nextShootTime = timer.current_frame_timestamp + 
                   nme.weapon.shootDelay + 
                   (Math.random() * nme.weapon.shootDelayExtraVariance);
 

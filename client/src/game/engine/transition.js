@@ -4,7 +4,7 @@ angular.module('game.engine.transition', [])
   // transitions between levels
   endtime: undefined,
   mode: undefined,
-  levelComplete: 0,
+  level.complete: 0,
   gameOver: 1,
   length_ms: 5000 // five seconds
 });

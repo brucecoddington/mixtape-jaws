@@ -1,70 +1,64 @@
 angular.module('game.states.play', [])
-
-  // GAME STATE: PLAYING
   /**
    * The in-game (during play) jaws state object.
    * This is the workhorse that handles all gameplay.
    */
-  .factory('PlayState', function ($log, profiler) {
+  .factory('playState', function ($log, profiler, timer, enemyWave, level, buildMenu, player, goldGui, particles, sprite) {
 
-    return function PlayState() { // in-game state
+    var play = {
 
-      /**
-       * inits for the PlayState class: called once
-       */
-      this.setup = function () {
-
-        $log.debug("PlayState.setup");
-
-        // special message that tells C# whether or not to send back button events to js or handle natively
-        console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
-
-        // wp8: try to reclaim some RAM that was used during inits/asset downloading
-        if (typeof(window.CollectGarbage) == "function") {
-          window.CollectGarbage();
-          $log.debug('PlayState.setup just did a CollectGarbage()');
-        }
-
+      setup: function setup() {
+        $log.debug("playState.setup");
         profiler.start("playstate setup");
 
         // reset all game states
-        game_over = false;
+        timer.game_over = false;
+
         enemyWave.current = 0;
         enemyWave.none_left = false;
         enemyWave.entitynum = 0;
         enemyWave.next_spawntime = 0;
+        
         level.pendingLevelComplete = false;
+        
         buildMenu.pending_pixelX = settings.farAway;
         buildMenu.pending_pixelY = settings.farAway;
         buildMenu.pending_tileX = settings.farAway;
         buildMenu.pending_tileY = settings.farAway;
+        
         player.gold = player_gold_startwith;
+        
         goldGui.displayed_gold = 0; // immediately count up
+        
         buildMenu.off();
-        enemyWave.next_spawntime = timer.currentFrameTimestamp - 1; // NOW! don't wait for intro cinematic to finish: insta
+        
+        enemyWave.next_spawntime = timer.current_frame_timestamp - 1; // NOW! don't wait for intro cinematic to finish: insta
 
         // no leftover particleSystem.particles
-        clearParticles();
+        particles.clear();
 
         // create new sprite lists (overwriting any left over from a previous game)
         sprite.init();
 
-        initLevel(level[level.current_level_number]);
-        if (gui.gui_enabled)
+        level.init(level[level.current_level_number]);
+
+        if (gui.gui_enabled) {
           sprite.updateGui(waveGui.instance, gameplay.time_remaining); // change from 000 imediately
+        }
 
         // scrolling background images
-        if (use_parallax_background) {
-          if (!parallax) {
-            parallax = new jaws.Parallax({
-                repeat_x : true,
-                repeat_y : true
-              }); // skelevator was repeat_y: false
-            parallax.addLayer({
-              image : "parallax.png",
+        if (background.use_parallax_background) {
+
+          if (!background.parallax) {
+            background.parallax = new jaws.Parallax({
+              repeat_x : true,
+              repeat_y : true
+            }); // skelevator was repeat_y: false
+
+            background.parallax.addLayer({
+              image : "background.parallax.png",
               damping : 4
             });
-            //parallax.addLayer({ image: "parallaxlayer2.png", damping: 4 });
           }
         }
 
@@ -72,84 +66,80 @@ angular.module('game.states.play', [])
         // also, start the intro cinematic NPC dialogue
         if (level.current_level_number == starting_level_number) {
           player.gold = player_gold_startwith;
-          player_nextGoldAt = 0; // timestamp when we get another gold - fixme: wait a full second?
-          introSceneNumber = 0;
-          introCinematic(); // start the NPC dialogue
+          player.next_gold_at = 0; // timestamp when we get another gold - fixme: wait a full second?
+          intro.scene_number = 0;
+          intro.cinematic(); // start the NPC dialogue
         }
+
         sprite.updateGui(goldGui.instance, player.gold); // immediate update to proper value in case it changed prev level
 
         player.maxHealth = 15;
         player.health = 15;
-        sprite.updateGui(healthGui.instance, player.health);
 
-        // the respawn particle system!
-        // if (particleSystem.particles_enabled) particleSystem.start(gameplay.startx, gameplay.starty, 5);
+        sprite.updateGui(healthGui.instance, player.health);
 
         viewport.init();
 
-        // start the timer! (fires once a second until game_over == true)
-        stopwatchstart = 0;
+        // start the timer! (fires once a second until timer.game_over == true)
+        timer.stopwatch_start = 0;
+
         // clear any previous timers just in case
-        if (game_timer)
-          window.clearInterval(game_timer);
-        game_timer = window.setInterval(stopwatchfunc, 1000);
-        //game_timer = window.setTimeout(stopwatchfunc, 1000);
+        if (timer.game_timer) {
+          window.clearInterval(timer.game_timer);
+        }
+      
+        timer.game_timer = window.setInterval(stopwatchfunc, 1000);
 
         profiler.end("playstate setup");
 
-        if (debugmode)
-          log('PlayState.setup() completed.');
+        $log.debug('playState.setup() completed.');
+      },
 
-      }; // end setup function
-
-      /**
-       * game simulation loop step - called every frame during play
-       */
-      this.update = function () {
-
+      update: function update() {
         profiler.start('UPDATE SIMULATION');
 
-        if (lastframetime == 0)
-          lastframetime = new Date().valueOf();
-        timer.currentFrameTimestamp = new Date().valueOf();
-        currentframems = (timer.currentFrameTimestamp - lastframetime);
+        if (timer.last_frame_time === 0) {
+          timer.last_frame_time = new Date().valueOf();
+        }
+          
+        timer.current_frame_timestamp = new Date().valueOf();
+        timer.current_frame_ms = (timer.current_frame_timestamp - timer.last_frame_time);
 
         // allow pausing
-        if (allow_pausing) {
+        if (timer.allow_pausing) {
+
           if (jaws.pressed("p")) {
             // debounce: don't switch every single frame
             // while you hold down the key
-            if (!this.pausetoggledelayuntil || (timer.currentFrameTimestamp > this.pausetoggledelayuntil)) {
-              this.pausetoggledelayuntil = timer.currentFrameTimestamp + 1000;
-              pauseGame(!game_paused);
+            if (!play.pausetoggledelayuntil || (timer.current_frame_timestamp > play.pausetoggledelayuntil)) {
+              play.pausetoggledelayuntil = timer.current_frame_timestamp + 1000;
+              game.pause(!timer.game_paused);
+            
             } else {
-              if (debugmode)
-                log('ignoring pause button until ' + this.pausetoggledelayuntil);
+              $log.debug('ignoring pause button until ' + play.pausetoggledelayuntil);
             }
-
           }
         }
-        if (game_paused)
+
+        if (timer.game_paused) {
           return;
+        }
 
         // update the a-star pathfinder class instance
         pathfinder.update();
 
         // update the tweener, moving entities
-        if (tween)
+        if (tween) {
           tween.update();
+        }
 
         // slowly earn gold IF we aren't in the intro cinematic
-        if (player_nextGoldAt <= timer.currentFrameTimestamp) {
+        if (player.next_gold_at <= timer.current_frame_timestamp) {
           // removed, since the enemies start spawing right away now
-          //if (introSceneNumber > 98) {
-          player_nextGoldAt = timer.currentFrameTimestamp + settings.ms_per_gold;
+          //if (intro.scene_number > 98) {
+          player.next_gold_at = timer.current_frame_timestamp + settings.ms_per_gold;
           player.gold++;
           sprite.updateGold();
-          //}
-          //else {
-          //    if (debugmode>2) log('No gold earning during intro');
-          //}
         }
 
         // Update the game simulation:
@@ -160,24 +150,26 @@ angular.module('game.states.play', [])
         // no matter what the performance and avoids
         // delta-based (time*speed) simulation steps that can
         // "poke through" walls if the fps is low
-        unsimulatedms += currentframems;
-        simstepsrequired = Math.floor(unsimulatedms / oneupdatetime);
-        if (simstepsrequired > 10) {
+        timer.unsimulated_dms += timer.current_frame_ms;
+        timer.sim_steps_required = Math.floor(timer.unsimulated_dms / timer.one_update_time);
+
+        if (timer.sim_steps_required > 10) {
           // max out just in case 1 fps; no "hanging"
-          simstepsrequired = 10;
-          unsimulatedms = 0;
+          timer.sim_steps_required = 10;
+          timer.unsimulated_dms = 0;
         }
-        lastframetime = timer.currentFrameTimestamp;
 
-        for (var sims = 0; sims < simstepsrequired; sims++) {
+        timer.last_frame_time = timer.current_frame_timestamp;
 
-          unsimulatedms -= oneupdatetime;
+        for (var sims = 0; sims < timer.sim_steps_required; sims++) {
 
-          framecount++;
+          timer.unsimulated_dms -= timer.one_update_time;
+
+          timer.frame_count++;
 
           // do we need to spawn another entity?
-          if ((enemyWave.next_spawntime !== 0) && enemyWave.next_spawntime <= timer.currentFrameTimestamp) {
-            enemyWave.next_spawntime = timer.currentFrameTimestamp + enemyWave.spawnInterval_ms;
+          if ((enemyWave.next_spawntime !== 0) && enemyWave.next_spawntime <= timer.current_frame_timestamp) {
+            enemyWave.next_spawntime = timer.current_frame_timestamp + enemyWave.spawnInterval_ms;
             waveSpawnNextEntity();
           }
 
@@ -191,28 +183,16 @@ angular.module('game.states.play', [])
           // this interferes with "falling off the edge" however
           // viewport.forceInside(sprite, 10);
 
-          //viewport.centerAround(sprite.game_objects.at(0)); // fixme
-          // should we follow the first known entity?
-
-          // this works but we want tween to control it with camera.move(px,py);
-          /*
-          if (entities) {
-          var cameraFollows = entities.at(0);
-          //viewport.centerAround(cameraFollows); // fixme broken if level is smaller than viewport
-          viewport.x = Math.floor(cameraFollows.x - viewport.width / 2);
-          viewport.y = Math.floor(cameraFollows.y - viewport.height / 2);
-          }
-           */
-
-          if (use_parallax_background) {
-            // update parallax background scroll
-            parallax.camera_x = viewport.x;
+          if (background.use_parallax_background) {
+            // update background.parallax background scroll
+            background.parallax.camera_x = viewport.x;
             // skelevator: line below was commented out:
-            parallax.camera_y = viewport.y; // buggy? it works now... but the bg image only tiles horiz...
+            background.parallax.camera_y = viewport.y; // buggy? it works now... but the bg image only tiles horiz...
           }
 
-          if (gui.gui_enabled)
+          if (gui.gui_enabled) {
             sprite.updateGold(); // every frame!? optimize? OK?
+          }
 
           // update the buildMenu
           if (buildMenu.overlay1) {
@@ -247,7 +227,7 @@ angular.module('game.states.play', [])
           }
 
           if (particleSystem.particles_enabled) {
-            updateParticles();
+            particles.update();
           }
         }
 
@@ -257,26 +237,21 @@ angular.module('game.states.play', [])
         }
 
         profiler.end('UPDATE SIMULATION');
+      },
 
-      };
-
-      /**
-       * the primary game render loop - called every frame during play
-       */
-      this.draw = function () {
-
+      draw: function draw() {
         // when pausing, we need to render one frame first
-        if (game_paused && !gui.need_to_draw_paused_sprite) {
+        if (timer.game_paused && !gui.need_to_draw_paused_sprite) {
           return;
         }
 
         profiler.start('DRAW EVERYTHING');
 
-        if (use_parallax_background && parallax) {
-          parallax.draw();
+        if (background.use_parallax_background && background.parallax) {
+          background.parallax.draw();
         } else {
-          // we don't need to bother clearing the screen because the parallax fills entire bg
-          jaws.context.fillStyle = background_colour;
+          // we don't need to bother clearing the screen because the background.parallax fills entire bg
+          jaws.context.fillStyle = background.color;
           jaws.context.fillRect(0, 0, jaws.width, jaws.height);
         }
 
@@ -284,10 +259,13 @@ angular.module('game.states.play', [])
 
           sprite.game_objects.draw(); // all the non tilemap moving objects - just the terrain background and build menu for now!
 
-          if (entities)
+          if (entities) {
             entities.drawIf(viewport.isPartlyInside);
-          if (sprite.healthbar_sprites)
+          }
+
+          if (sprite.healthbar_sprites) {
             sprite.healthbar_sprites.drawIf(viewport.isPartlyInside);
+          }
 
           profiler.start('particleSystem.particles');
           particleSystem.particles.drawIf(viewport.isPartlyInside);
@@ -304,14 +282,17 @@ angular.module('game.states.play', [])
         }
 
         // intro cinematic
-        if (introCinematicBG)
-          introCinematicBG.draw();
-        if (currentIntroCinematicSprite)
-          currentIntroCinematicSprite.draw();
+        if (intro.cinematic_bg) {
+          intro.cinematic_bg.draw();
+        }
+          
+        if (intro.current_cinematic_sprite) {
+          intro.current_cinematic_sprite.draw();
+        }
 
         profiler.end('DRAW EVERYTHING');
-
-      }; // PlayState.draw
-
+      }
     };
+
+    return play;
   });
