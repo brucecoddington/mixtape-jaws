@@ -11,7 +11,7 @@ angular.module('game.states.transitions', [])
 
       this.setup = function () {
 
-        $log.debug('Game State: transition after level ' + current_level_number);
+        $log.debug('Game State: transition after level ' + level.current_level_number);
 
         // special message that tells C# whether or not to send back button events to js or handle natively
         console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
@@ -37,7 +37,7 @@ angular.module('game.states.transitions', [])
         }
 
         if (transition.mode == transition.levelComplete) {
-          current_level_number++; // upcoming level
+          level.current_level_number++; // upcoming level
           //sfxvictory()
           sfx.play('Victory');
 
@@ -76,9 +76,9 @@ angular.module('game.states.transitions', [])
               log('transitioning from game over to titlescreen');
             gameOver(false);
           } else {
-            if (level[current_level_number]) {
+            if (level[level.current_level_number]) {
               if (debugmode)
-                log('about to play level ' + current_level_number);
+                log('about to play level ' + level.current_level_number);
               //sfxstart();
               jaws.switchGameState(PlayState); // begin the next level
             } else {
@@ -100,13 +100,13 @@ angular.module('game.states.transitions', [])
           gameoverSprite.draw();
           youloseSprite.draw();
         } else {
-          if (level[current_level_number]) // more to come?
+          if (level[level.current_level_number]) // more to come?
           {
-            //if (debugmode) log('Next world (level ' + current_level_number + ') exists...');
+            //if (debugmode) log('Next world (level ' + level.current_level_number + ') exists...');
             levelcompleteSprite.draw();
           } else // game over: final level completed!
           {
-            //if (debugmode) log('Next world (level ' + current_level_number + ') does not exist. GAME COMPLETED!');
+            //if (debugmode) log('Next world (level ' + level.current_level_number + ') does not exist. GAME COMPLETED!');
             gameoverSprite.draw();
             beatTheGameSprite.draw();
           }

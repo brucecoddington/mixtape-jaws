@@ -2,15 +2,15 @@ angular.module('game.entities.weapon', [])
   
   .value('weaponType', {
     // maps to particle animation number (5=arrows, 6=flame, 7=energy)
-    ARROWS: 1,
-    FIRE: 2,
-    ENERGY: 3
+    arrows: 1,
+    fire: 2,
+    energy: 3
   })
 
   .value('damageType', {
-    PHYSICAL: 1,
-    MAGICAL: 2,
-    SLOW: 3
+    physical: 1,
+    magical: 2,
+    slow: 3
   })
 
   .factory('Weapon', function (weaponType, damageType) {
@@ -24,24 +24,24 @@ angular.module('game.entities.weapon', [])
       this.shootDelayExtraVariance = 0;
 
       switch (type) {
-      case weaponType.FIRE:
+      case weaponType.fire:
         this.projectilenumber = particle.fire;
         this.damage = 40; // three hits to kill
-        this.damagetype = damageType.MAGICAL;
+        this.damagetype = damageType.magical;
         this.particleHit = particle.fireHit;
         this.soundEffectName = 'shootFire';
         break;
-      case weaponType.ENERGY:
+      case weaponType.energy:
         this.projectilenumber = particle.energy;
         this.damage = 75; // two hits to kill
-        this.damagetype = damageType.SLOW;
+        this.damagetype = damageType.slow;
         this.particleHit = particle.energyHit;
         this.soundEffectName = 'hitEnergy';
         break;
-      default: // case weaponType.ARROWS:
+      default: // case weaponType.arrows:
         this.projectilenumber = particle.arrow;
         this.damage = 25; // four hits to kill
-        this.damagetype = damageType.PHYSICAL;
+        this.damagetype = damageType.physical;
         this.particleHit = particle.arrowHit;
         this.soundEffectName = 'shootArrow';
         break;

@@ -24,7 +24,7 @@ angular.module('game.container', [
       gui.showing_levelselectscreen = false;
       game_paused = false; // keyboard doesn't reset this
       //sfxstart();
-      current_level_number = starting_level_number; // start from the first level (or whichever the user selected)
+      level.current_level_number = starting_level_number; // start from the first level (or whichever the user selected)
       clearParticles();
       jaws.switchGameState(PlayState); // Start game!
     },

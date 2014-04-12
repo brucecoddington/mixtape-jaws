@@ -1,6 +1,9 @@
-angular.module('game.entities.enemy', [])
+angular.module('game.entities.enemy', [
+  'game.engine.particles',
+  'game.engine.spawn'
+])
 
-.factory('enemyWave', function () {
+.factory('enemyWave', function ($log, particleSystem, spawner) {
   // Game data for enemy waves
   
   var enemyWave = {
@@ -54,22 +57,20 @@ angular.module('game.entities.enemy', [])
     waveSpawnNextEntity: function waveSpawnNextEntity() {
 
       // avoid edge case race condition: ensure the game's up and running
-      if (!timer.currentFrameTimestamp)
+      if (!timer.currentFrameTimestamp) {
         return;
+      }
 
-      if (debugmode)
-        log('Level:' + current_level_number + ' Wave:' + enemyWave.current + ' Ent:' + enemyWave.entitynum + ' at ' + timer.currentFrameTimestamp);
+      $log.debug('Level:' + level.current_level_number + ' Wave:' + enemyWave.current + ' Ent:' + enemyWave.entitynum + ' at ' + timer.currentFrameTimestamp);
 
-      if (!wave[current_level_number]) {
-        if (debugmode)
-          log('No more levels in the wave data!');
+      if (!enemyWave.wave[level.current_level_number]) {
+        $log.debug('No more levels in the wave data!');
         enemyWave.none_left = true;
         return;
       }
 
-      if (!wave[current_level_number][enemyWave.current]) {
-        if (debugmode)
-          log('No more waves in this level!');
+      if (!enemyWave.wave[level.current_level_number][enemyWave.current]) {
+        $log.debug('No more waves in this level!');
         enemyWave.none_left = true;
         level.checkComplete();
         return;
@@ -77,25 +78,22 @@ angular.module('game.entities.enemy', [])
 
       if (enemyWave.entitynum === 0) // brand new wave just started
       {
-        enemyWave.max = wave[current_level_number].length;
+        enemyWave.max = enemyWave.wave[level.current_level_number].length;
         sprite.updateAll(waveGui.instance, ((enemyWave.current + 1) * 10) + enemyWave.max); // for "3 of 5" we send 35
-        if (debugmode)
-          log('NEW WAVE STARTING: ' + (enemyWave.current + 1) + ' of ' + enemyWave.max);
+        $log.debug('NEW WAVE STARTING: ' + (enemyWave.current + 1) + ' of ' + enemyWave.max);
       }
 
       // none remaining in this wave?
-      if (wave[current_level_number][enemyWave.current].length - 1 < enemyWave.entitynum) {
-        if (debugmode)
-          log('No more entities in this wave!');
+      if (enemyWave.wave[level.current_level_number][enemyWave.current].length - 1 < enemyWave.entitynum) {
+        $log.debug('No more entities in this wave!');
         enemyWave.entitynum = 0;
         enemyWave.current++;
-        //waveSpawnNextEntity(); // recurse with new numbers - nah, just wait till next heartbeat
         return;
       }
 
       enemyWave.none_left = false;
 
-      var nextone = wave[current_level_number][enemyWave.current][enemyWave.entitynum];
+      var nextone = enemyWave.wave[level.current_level_number][enemyWave.current][enemyWave.entitynum];
       // create the new entity from this wave (or just wait if it was a zero)
       if (nextone > 0) {
         // this sound overlaps with too much at the start: removed wp8

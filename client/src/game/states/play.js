@@ -5,7 +5,7 @@ angular.module('game.states.play', [])
    * The in-game (during play) jaws state object.
    * This is the workhorse that handles all gameplay.
    */
-  .factory('PlayState', function () {
+  .factory('PlayState', function ($log) {
 
     return function PlayState() { // in-game state
 
@@ -14,8 +14,7 @@ angular.module('game.states.play', [])
        */
       this.setup = function () {
 
-        if (debugmode)
-          log("PlayState.setup");
+        $log.debug("PlayState.setup");
 
         // special message that tells C# whether or not to send back button events to js or handle natively
         console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
@@ -48,34 +47,10 @@ angular.module('game.states.play', [])
         // no leftover particleSystem.particles
         clearParticles();
 
-        // init the sprite sheet tiles
-        if (use_level_sprite_sheet) {
-          if (!sprite_sheet) {
-            if (debugmode)
-              log("Chopping up tiles spritesheet...");
-            sprite_sheet = new jaws.SpriteSheet({
-                image : "tiles.png",
-                frame_size : [tile.size, tile.size],
-                orientation : 'right'
-              });
-          }
-        }
-
-        // a generic sprite list for everything we need to draw first (like the terrainSprite)
-        if (!sprite.game_objects)
-          sprite.game_objects = new jaws.SpriteList();
-        // sprite.game_objects persists beyond levels since it contains the buildMenuSprite
-
-        // reset in between play sessions - a list of clickable buttons
-        sprite.button_sprites = new jaws.SpriteList(); /// see event.clickMaybe()
-
         // create new sprite lists (overwriting any left over from a previous game)
-        entities = new jaws.SpriteList();
-        sprite.teams[team.bad] = new jaws.SpriteList();
-        sprite.teams[team.good] = new jaws.SpriteList();
-        sprite.healthbar_sprites = new jaws.SpriteList();
+        sprite.init();
 
-        initLevel(level[current_level_number]);
+        initLevel(level[level.current_level_number]);
         if (gui_enabled)
           sprite.updateAll(waveGui.instance, gameplay.time_remaining); // change from 000 imediately
 
@@ -96,7 +71,7 @@ angular.module('game.states.play', [])
 
         // reset the player score if this is the first level
         // also, start the intro cinematic NPC dialogue
-        if (current_level_number == starting_level_number) {
+        if (level.current_level_number == starting_level_number) {
           player_Gold = player_gold_startwith;
           player_nextGoldAt = 0; // timestamp when we get another gold - fixme: wait a full second?
           introSceneNumber = 0;

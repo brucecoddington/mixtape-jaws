@@ -45,7 +45,7 @@ angular.module('game.engine.level', [
         
       // the pre-rendered map terrain eg level0.png level1.png level2.png etc
       level.terrainSprite = new jaws.Sprite({
-        image : jaws.assets.get("level" + (current_level_number) + ".png"),
+        image : jaws.assets.get("level" + (level.current_level_number) + ".png"),
         x : 0,
         y : 0
       });
