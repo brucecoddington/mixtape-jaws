@@ -1,11 +1,10 @@
-angular.module('game.engine.timer', [])
+angular.module('game.engine.timer', [
+  'game.engine.transition'
+])
 
-.value('timerConfig', {
+.factory('timer', function (transition) {
   
-})
-
-.factory('timer', function () {
-  return {
+  var timer = {
     // timer
     game_paused: 3, // 0=playing 1=paused 3=mainmenu
     allow_pausing: false, // this is a non-keyboard game
@@ -29,27 +28,17 @@ angular.module('game.engine.timer', [])
      */
      tick: function stopwatchfunc() { // fixme todo unused
 
-      if (!game_paused) {
-        time_remaining += time_direction;
-        //if (gui_enabled) updateGUIsprites(WaveGUI, time_remaining);
-
-        // spawn entities via the waves of enemies
-        // this is now done using timestamps in the playstate update loop
-        // wave_next_spawntime = currentFrameTimestamp + wave_spawn_interval_ms;
-        // waveSpawnNextEntity();
-
+      if (!timer.game_paused) {
+        gameplay.time_remaining += gameplay.time_direction;
       }
 
-      if ((time_remaining < 1) && gameover_when_time_runs_out) {
-        if (debugmode)
-          log('RAN OUT OF TIME!');
-        //sfxdie();
-        transition_mode = TRANSITION_GAME_OVER;
+      if ((gameplay.time_remaining < 1) && settings.gameover_when_time_runs_out) {
+        $log.debug('RAN OUT OF TIME!');
+        transition.mode = transition.gameOver;
         jaws.switchGameState(LevelTransitionScreenState);
-        // will eventually call gameOver(false);
       }
-
-      //window.setTimeout(stopwatchfunc, 1000);
     }
   };
+
+  return timer;
 });

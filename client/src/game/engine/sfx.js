@@ -1,14 +1,12 @@
 angular.module('game.engine.sfx', [])
-  
-  .value('soundConfig', { 
-    // sound
-    mute: false, // no sound at all if true
-    soundMusic: null // the background music loop
-  })
 
-  .factory('sound', function () {
+  .factory('sound', function ($log, profiler) {
 
-    return {
+    var sound = {
+      // sound
+      mute: false, // no sound at all if true
+      soundMusic: null, // the background music loop
+      
       /**
        * Inits the sound engine by preloading the appropriate sound data
        * ogg and wav versions are only used for online webpage versions
@@ -17,25 +15,25 @@ angular.module('game.engine.sfx', [])
        * NOTE: this has no effect when using wp8 which uses C++ XSound code
        */
       init: function soundInit() {
-        if (debugmode)
-          log('soundInit...');
-        profile_start('soundInit');
+        $log.debug('soundInit...');
+        profiler.start('soundInit');
+
         // start the ambient music immediately - while downloading sprites
-        soundMusic = new Howl({
-            urls : ['game-media/music.mp3', 'game-media/music.ogg', 'game-media/music.wav'],
-            // this should be true but it never loops if we stream
-            buffer : false, // stream - start playing before all is downloaded: forces use of html5audio
-            autoplay : true,
-            loop : true,
-            volume : 0.25 // quieter
-          });
+        sound.soundMusic = new Howl({
+          urls : ['assets/audio/bgm/music.mp3', 'assets/audio/bgm/music.ogg', 'assets/audio/bgm/music.wav'],
+          // this should be true but it never loops if we stream
+          buffer : false, // stream - start playing before all is downloaded: forces use of html5audio
+          autoplay : true,
+          loop : true,
+          volume : 0.25 // quieter
+        });
 
-        // wp8 only sound hack: FIXME TODO
         sfx.play('music');
-
-        profile_end('soundInit');
+        profiler.end('soundInit');
       }
     };
+
+    return sound;
   })
 
   .factory('sfx', function () {

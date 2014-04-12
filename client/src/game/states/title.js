@@ -1,4 +1,6 @@
-angular.module('game.states.title', [])
+angular.module('game.states.title', [
+  'game.gui.sprite'
+])
 
   // GAME STATE: THE TITLE SCREEN
   /**
@@ -7,7 +9,7 @@ angular.module('game.states.title', [])
    * by the other states; if you remove the titlescreen,
    * be sure to create these sprites elsewhere.
    */
-  .factory('TitleScreenState', function () {
+  .factory('TitleScreenState', function (sprite) {
 
     return function TitleScreenState() {
 
@@ -17,18 +19,7 @@ angular.module('game.states.title', [])
        */
       this.setup = function () {
 
-        if (debugmode)
-          log('TitleScreenState.setup');
-
-        // special message that tells C# whether or not to send back button events to js or handle natively
-        console.log('[STOP-SENDING-BACK-BUTTON-EVENTS]');
-
-        // wp8: try to reclaim some RAM that was used during inits/asset downloading
-        if (typeof(window.CollectGarbage) == "function") {
-          window.CollectGarbage();
-          if (debugmode)
-            log('TitleScreenState.setup just did a CollectGarbage()');
-        }
+        $log.debug('TitleScreenState.setup');
 
         // used only for the particle decorations
         titleframecount = 0;
@@ -42,9 +33,6 @@ angular.module('game.states.title', [])
 
         // allow keyboard input and prevent browser from getting these events
         jaws.preventDefaultKeys(["w", "a", "s", "d", "p", "space", "z", "up", "down", "right", "left"]);
-
-        // an html gui element (using the DOM!) with the FPS and debug profile stats
-        info_tag = document.getElementById("info");
 
         // the main menu background
         if (!splashSprite)
@@ -67,8 +55,8 @@ angular.module('game.states.title', [])
         levelSelectSprite.action = levelSelectClick;
 
         // reset in between play sessions - a list of clickable buttons
-        guiButtonSprites = new jaws.SpriteList(); /// see guiClickMaybe()
-        guiButtonSprites.push(levelSelectSprite);
+        sprite.button_sprites = new jaws.SpriteList(); /// see event.clickMaybe()
+        sprite.button_sprites.push(levelSelectSprite);
 
         // the msgbox background - used for pause screen, gameover, level transitions
         if (!msgboxSprite)
@@ -105,17 +93,17 @@ angular.module('game.states.title', [])
             });
 
         // particle system - one explosion per sprite
-        if (particles_enabled) {
-          if (!particles)
-            particles = new jaws.SpriteList();
+        if (particleSystem.particles_enabled) {
+          if (!particleSystem.particles)
+            particleSystem.particles = new jaws.SpriteList();
           // every frame of every particle animation
-          if (!allparticleframes) {
+          if (!particleSystem.allparticleframes) {
             if (debugmode)
               log("Chopping up particle animation spritesheet...");
-            allparticleframes = new jaws.Animation({
-                sprite_sheet : jaws.assets.get("particles.png"),
-                frame_size : particle_framesize,
-                frame_duration : PARTICLE_FRAME_MS,
+            particleSystem.allparticleframes = new jaws.Animation({
+                sprite_sheet : jaws.assets.get("particleSystem.particles.png"),
+                frame_size : particleSystem.framesize,
+                frame_duration : particleSystem.frame_ms,
                 orientation : 'right'
               });
           }
@@ -128,22 +116,22 @@ angular.module('game.states.title', [])
 
           var n = 0; // temp loop counter
 
-          if (!WaveGUIlabel)
-            WaveGUIlabel = extractSprite(guiSpriteSheet.image, 0, 32 * 14, 256, 32, {
-                x : wave_gui_x,
-                y : wave_gui_y,
+          if (!waveGui.label)
+            waveGui.label = extractSprite(guiSpriteSheet.image, 0, 32 * 14, 256, 32, {
+                x : waveGui.x,
+                y : waveGui.y,
                 anchor : "top_left"
               });
-          if (!GoldGUIlabel)
-            GoldGUIlabel = extractSprite(guiSpriteSheet.image, 0, 32 * 16, 256, 32, {
-                x : gold_gui_x,
-                y : gold_gui_y,
+          if (!goldGui.label)
+            goldGui.label = extractSprite(guiSpriteSheet.image, 0, 32 * 16, 256, 32, {
+                x : goldGui.x,
+                y : goldGui.y,
                 anchor : "top_left"
               });
-          if (!HealthGUIlabel)
-            HealthGUIlabel = extractSprite(guiSpriteSheet.image, 0, 32 * 15, 256, 32, {
-                x : health_gui_x,
-                y : health_gui_y,
+          if (!healthGui.label)
+            healthGui.label = extractSprite(guiSpriteSheet.image, 0, 32 * 15, 256, 32, {
+                x : healthGui.x,
+                y : healthGui.y,
                 anchor : "top_left"
               });
           if (!PausedGUI)
@@ -153,17 +141,17 @@ angular.module('game.states.title', [])
                 anchor : "center_center"
               });
 
-          if (!WaveGUI) {
+          if (!waveGui.instance) {
             if (debugmode)
               log('creating wave gui');
-            WaveGUI = new jaws.SpriteList();
+            waveGui.instance = new jaws.SpriteList();
             // the label
-            WaveGUI.push(WaveGUIlabel);
+            waveGui.instance.push(waveGui.label);
             // eg 00000 from right to left
-            for (n = 0; n < wave_gui_digits; n++) {
-              WaveGUI.push(new jaws.Sprite({
-                  x : wave_gui_x + wave_gui_digits_offset + (wave_gui_spacing * wave_gui_digits) - (wave_gui_spacing * n),
-                  y : wave_gui_y,
+            for (n = 0; n < waveGui.digits; n++) {
+              waveGui.instance.push(new jaws.Sprite({
+                  x : waveGui.x + waveGui.digits_offset + (waveGui.spacing * waveGui.digits) - (waveGui.spacing * n),
+                  y : waveGui.y,
                   image : fontSpriteSheet.frames[0],
                   anchor : "top_left"
                 }));
@@ -171,34 +159,34 @@ angular.module('game.states.title', [])
           }
 
           // these are sprite lists containing 0..9 digit tiles, ordered from right to left (1s, 10s, 100s, etc)
-          if (!GoldGUI) {
+          if (!goldGui.instance) {
             if (debugmode)
               log('creating gold gui');
-            GoldGUI = new jaws.SpriteList();
+            goldGui.instance = new jaws.SpriteList();
             // the label
-            GoldGUI.push(GoldGUIlabel);
+            goldGui.instance.push(goldGui.label);
             // eg 00000 from right to left
-            for (n = 0; n < gold_gui_digits; n++) {
-              GoldGUI.push(new jaws.Sprite({
-                  x : gold_gui_x + gold_gui_digits_offset + (gold_gui_spacing * gold_gui_digits) - (gold_gui_spacing * n),
-                  y : gold_gui_y,
+            for (n = 0; n < goldGui.digits; n++) {
+              goldGui.instance.push(new jaws.Sprite({
+                  x : goldGui.x + goldGui.digits_offset + (goldGui.spacing * goldGui.digits) - (goldGui.spacing * n),
+                  y : goldGui.y,
                   image : fontSpriteSheet.frames[0],
                   anchor : "top_left"
                 }));
             }
           }
 
-          if (!HealthGUI) {
+          if (!healthGui.instance) {
             if (debugmode)
               log('creating health gui');
-            HealthGUI = new jaws.SpriteList();
+            healthGui.instance = new jaws.SpriteList();
             // the label
-            HealthGUI.push(HealthGUIlabel);
+            healthGui.instance.push(healthGui.label);
             // eg 00000 from right to left
-            for (n = 0; n < health_gui_digits; n++) {
-              HealthGUI.push(new jaws.Sprite({
-                  x : health_gui_x + health_gui_digits_offset + (health_gui_spacing * health_gui_digits) - (health_gui_spacing * n),
-                  y : health_gui_y,
+            for (n = 0; n < healthGui.digits; n++) {
+              healthGui.instance.push(new jaws.Sprite({
+                  x : healthGui.x + healthGui.digits_offset + (healthGui.spacing * healthGui.digits) - (healthGui.spacing * n),
+                  y : healthGui.y,
                   image : fontSpriteSheet.frames[0],
                   anchor : "top_left"
                 }));
@@ -209,39 +197,43 @@ angular.module('game.states.title', [])
         // create all the sprites used by the GUI
         if (!menuSprite)
           menuSprite = new jaws.Sprite({
-              image : chopImage(guiSpriteSheet.image, 0, 32 * 10, 352, 32 * 2),
+              image : sprite.chop(guiSpriteSheet.image, 0, 32 * 10, 352, 32 * 2),
               x : (jaws.width / 2) | 0,
               y : (jaws.height / 2 + 40) | 0,
               anchor : "center_center",
               flipped : false
             });
+        
         if (!levelcompleteSprite)
           levelcompleteSprite = new jaws.Sprite({
-              image : chopImage(guiSpriteSheet.image, 0, 0, 352, 128),
+              image : sprite.chop(guiSpriteSheet.image, 0, 0, 352, 128),
               x : (jaws.width / 2) | 0,
               y : (jaws.height / 2) | 0,
               anchor : "center_center",
               flipped : false
             });
+        
         if (!gameoverSprite)
           gameoverSprite = new jaws.Sprite({
-              image : chopImage(guiSpriteSheet.image, 0, 128, 352, 64),
+              image : sprite.chop(guiSpriteSheet.image, 0, 128, 352, 64),
               x : (jaws.width / 2) | 0,
               y : ((jaws.height / 2) | 0) - 42,
               anchor : "center_center",
               flipped : false
             });
+        
         if (!youloseSprite)
           youloseSprite = new jaws.Sprite({
-              image : chopImage(guiSpriteSheet.image, 0, 192, 352, 64),
+              image : sprite.chop(guiSpriteSheet.image, 0, 192, 352, 64),
               x : (jaws.width / 2) | 0,
               y : ((jaws.height / 2) | 0) + 42,
               anchor : "center_center",
               flipped : false
             });
+
         if (!beatTheGameSprite)
           beatTheGameSprite = new jaws.Sprite({
-              image : chopImage(guiSpriteSheet.image, 0, 256, 352, 64),
+              image : sprite.chop(guiSpriteSheet.image, 0, 256, 352, 64),
               x : (jaws.width / 2) | 0,
               y : ((jaws.height / 2) | 0) + 42,
               anchor : "center_center",
@@ -249,8 +241,9 @@ angular.module('game.states.title', [])
             });
 
         // move all gui elements around in a window size independent way (responsive liquid layout)
-        if (gui_enabled)
-          liquidLayoutGUI();
+        if (gui_enabled) {
+          gui.liquidLayoutGUI();
+        }
 
         // trigger a menu press if we click anywhere: uses the pos to determine which menu item was clicked
         window.addEventListener("mousedown", unPause, false);
@@ -292,16 +285,16 @@ angular.module('game.states.title', [])
         // only draws after the title screen is fully zoomed in
         if (titleframecount % 5 == 0 && splashSpriteZoom > 0.99) {
           if (menu_item_selected == 0)
-            startParticleSystem(jaws.width / 2 - 16 - (Math.random() * 272), jaws.height / 2 + 32 + (Math.random() * 80));
+            particleSystem.start(jaws.width / 2 - 16 - (Math.random() * 272), jaws.height / 2 + 32 + (Math.random() * 80));
           else
-            startParticleSystem(jaws.width / 2 + 16 + (Math.random() * 272), jaws.height / 2 + 32 + (Math.random() * 80));
+            particleSystem.start(jaws.width / 2 + 16 + (Math.random() * 272), jaws.height / 2 + 32 + (Math.random() * 80));
         }
 
         if (jaws.pressed("down") ||
           jaws.pressed("right")) {
           if (debugmode)
             log('credits button highlighted');
-          titleframecount = 60; // reset particles immediately
+          titleframecount = 60; // reset particleSystem.particles immediately
           menu_item_selected = 1;
         }
 
@@ -309,7 +302,7 @@ angular.module('game.states.title', [])
           jaws.pressed("left")) {
           if (debugmode)
             log('start button highlighted');
-          titleframecount = 60; // reset particles immediately
+          titleframecount = 60; // reset particleSystem.particles immediately
           menu_item_selected = 0;
         }
 
@@ -358,7 +351,7 @@ angular.module('game.states.title', [])
                 if (debugmode)
                   log('Titlescreen SHOWING CREDITS!');
                 showing_credits = true;
-                showing_levelselectscreen = false;
+                gui.showing_levelselectscreen = false;
                 game_paused = 3; // reset
                 // special message that tells C# whether or not to send back button events to js or handle natively
                 console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
@@ -366,9 +359,9 @@ angular.module('game.states.title', [])
               {
                 if (debugmode)
                   log('Titlescreen SHOWING MAP!');
-                //Show the map and wait for levelSelectScreen's guiClickMaybe() to start the game
+                //Show the map and wait for levelSelectScreen's event.clickMaybe() to start the game
                 showing_credits = false;
-                showing_levelselectscreen = true;
+                gui.showing_levelselectscreen = true;
                 //startGameNow(); // is this redundant: called by levelSelectClick()
                 // special message that tells C# whether or not to send back button events to js or handle natively
                 console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
@@ -386,7 +379,7 @@ angular.module('game.states.title', [])
           noKeysPressedLastFrame = false;
         }
 
-        if (particles_enabled)
+        if (particleSystem.particles_enabled)
           updateParticles();
 
         titleframecount++;
@@ -414,12 +407,12 @@ angular.module('game.states.title', [])
             msgboxSprite.scaleTo(1);
             msgboxSprite.draw();
             creditsSprite.draw();
-          } else if (showing_levelselectscreen) {
+          } else if (gui.showing_levelselectscreen) {
             levelSelectSprite.draw();
           } else {
             splashSprite.draw();
-            if (particles_enabled)
-              particles.draw();
+            if (particleSystem.particles_enabled)
+              particleSystem.particles.draw();
             //menuSprite.draw();
           }
         }

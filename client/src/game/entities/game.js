@@ -2,7 +2,7 @@ angular.module('game.entities.game', [])
 
   .factory('GameEntity', function (entityType) {
     
-    return function GameEntity(startx, starty) {
+    return function GameEntity(gameplay.startx, gameplay.starty) {
       if (debugmode) { log('Creating a new GameEntity'); }
 
       this.self = this; // just in case we lose the this. context (events)
@@ -27,7 +27,7 @@ angular.module('game.entities.game', [])
 
       var sprite_framesize = [128, 96]; // pixel dimensions of all entity sprites
 
-      this.sprite = new jaws.Sprite({ x: startx, y: starty, anchor: "center_center", flipped: true });
+      this.sprite = new jaws.Sprite({ x: gameplay.startx, y: gameplay.starty, anchor: "center_center", flipped: true });
       if (debugmode) { log("Chopping up player animation spritesheet..."); }
       this.sprite.animation = new jaws.Animation({ sprite_sheet: jaws.assets.get("player.png"), frame_size: sprite_framesize, frame_duration: 75 });
       this.sprite.move_anim = this.sprite.animation.slice(0, 7);

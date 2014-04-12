@@ -1,3 +1,4 @@
 angular.module('game.data', [
-  'data.levels'
+  'data.levels',
+  'data.preload'
 ]);

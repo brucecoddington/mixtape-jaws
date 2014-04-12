@@ -27,25 +27,25 @@ angular.module('game.states.play', [])
             log('PlayState.setup just did a CollectGarbage()');
         }
 
-        profile_start("playstate setup");
+        profiler.start("playstate setup");
 
         // reset all game states
         game_over = false;
-        wave_current = 0;
-        wave_none_left = false;
-        wave_entitynum = 0;
-        wave_next_spawntime = 0;
-        pendingLevelComplete = false;
-        buildPendingPixelX = FAR_AWAY;
-        buildPendingPixelY = FAR_AWAY;
-        buildPendingTileX = FAR_AWAY;
-        buildPendingTileY = FAR_AWAY;
+        enemyWave.current = 0;
+        enemyWave.none_left = false;
+        enemyWave.entitynum = 0;
+        enemyWave.next_spawntime = 0;
+        level.pendingLevelComplete = false;
+        buildPendingPixelX = settings.farAway;
+        buildPendingPixelY = settings.farAway;
+        buildPendingTileX = settings.farAway;
+        buildPendingTileY = settings.farAway;
         player_Gold = player_gold_startwith;
         displayedGold = 0; // immediately count up
         buildMenuOFF();
-        wave_next_spawntime = currentFrameTimestamp - 1; // NOW! don't wait for intro cinematic to finish: insta
+        enemyWave.next_spawntime = timer.currentFrameTimestamp - 1; // NOW! don't wait for intro cinematic to finish: insta
 
-        // no leftover particles
+        // no leftover particleSystem.particles
         clearParticles();
 
         // init the sprite sheet tiles
@@ -55,29 +55,29 @@ angular.module('game.states.play', [])
               log("Chopping up tiles spritesheet...");
             sprite_sheet = new jaws.SpriteSheet({
                 image : "tiles.png",
-                frame_size : [TILESIZE, TILESIZE],
+                frame_size : [tile.size, tile.size],
                 orientation : 'right'
               });
           }
         }
 
         // a generic sprite list for everything we need to draw first (like the terrainSprite)
-        if (!game_objects)
-          game_objects = new jaws.SpriteList();
-        // game_objects persists beyond levels since it contains the buildMenuSprite
+        if (!sprite.game_objects)
+          sprite.game_objects = new jaws.SpriteList();
+        // sprite.game_objects persists beyond levels since it contains the buildMenuSprite
 
         // reset in between play sessions - a list of clickable buttons
-        guiButtonSprites = new jaws.SpriteList(); /// see guiClickMaybe()
+        sprite.button_sprites = new jaws.SpriteList(); /// see event.clickMaybe()
 
         // create new sprite lists (overwriting any left over from a previous game)
         entities = new jaws.SpriteList();
-        teams[TEAM_BAD] = new jaws.SpriteList();
-        teams[TEAM_GOOD] = new jaws.SpriteList();
-        healthbarsprites = new jaws.SpriteList();
+        sprite.teams[team.bad] = new jaws.SpriteList();
+        sprite.teams[team.good] = new jaws.SpriteList();
+        sprite.healthbar_sprites = new jaws.SpriteList();
 
         initLevel(level[current_level_number]);
         if (gui_enabled)
-          updateGUIsprites(WaveGUI, time_remaining); // change from 000 imediately
+          sprite.updateAll(waveGui.instance, gameplay.time_remaining); // change from 000 imediately
 
         // scrolling background images
         if (use_parallax_background) {
@@ -102,21 +102,16 @@ angular.module('game.states.play', [])
           introSceneNumber = 0;
           introCinematic(); // start the NPC dialogue
         }
-        updateGUIsprites(GoldGUI, player_Gold); // immediate update to proper value in case it changed prev level
+        sprite.updateAll(goldGui.instance, player_Gold); // immediate update to proper value in case it changed prev level
 
-        player_maxHealth = 15;
-        player_Health = 15;
-        updateGUIsprites(HealthGUI, player_Health);
+        player.maxHealth = 15;
+        player.health = 15;
+        sprite.updateAll(healthGui.instance, player.health);
 
         // the respawn particle system!
-        // if (particles_enabled) startParticleSystem(startx, starty, 5);
+        // if (particleSystem.particles_enabled) particleSystem.start(gameplay.startx, gameplay.starty, 5);
 
-        // set up the chase camera view
-        viewport = new jaws.Viewport({
-            max_x : viewport_max_x,
-            max_y : viewport_max_y
-          });
-        jaws.activeviewport = viewport; // resize events need this in global scope
+        viewport.init();
 
         // start the timer! (fires once a second until game_over == true)
         stopwatchstart = 0;
@@ -126,7 +121,7 @@ angular.module('game.states.play', [])
         game_timer = window.setInterval(stopwatchfunc, 1000);
         //game_timer = window.setTimeout(stopwatchfunc, 1000);
 
-        profile_end("playstate setup");
+        profiler.end("playstate setup");
 
         if (debugmode)
           log('PlayState.setup() completed.');
@@ -138,20 +133,20 @@ angular.module('game.states.play', [])
        */
       this.update = function () {
 
-        profile_start('UPDATE SIMULATION');
+        profiler.start('UPDATE SIMULATION');
 
         if (lastframetime == 0)
           lastframetime = new Date().valueOf();
-        currentFrameTimestamp = new Date().valueOf();
-        currentframems = (currentFrameTimestamp - lastframetime);
+        timer.currentFrameTimestamp = new Date().valueOf();
+        currentframems = (timer.currentFrameTimestamp - lastframetime);
 
         // allow pausing
         if (allow_pausing) {
           if (jaws.pressed("p")) {
             // debounce: don't switch every single frame
             // while you hold down the key
-            if (!this.pausetoggledelayuntil || (currentFrameTimestamp > this.pausetoggledelayuntil)) {
-              this.pausetoggledelayuntil = currentFrameTimestamp + 1000;
+            if (!this.pausetoggledelayuntil || (timer.currentFrameTimestamp > this.pausetoggledelayuntil)) {
+              this.pausetoggledelayuntil = timer.currentFrameTimestamp + 1000;
               pauseGame(!game_paused);
             } else {
               if (debugmode)
@@ -163,19 +158,18 @@ angular.module('game.states.play', [])
         if (game_paused)
           return;
 
-        // update the a-star Pathfinding class instance
-        if (AI)
-          AI.update();
+        // update the a-star pathfinder class instance
+        pathfinder.update();
 
         // update the tweener, moving entities
         if (tween)
           tween.update();
 
         // slowly earn gold IF we aren't in the intro cinematic
-        if (player_nextGoldAt <= currentFrameTimestamp) {
+        if (player_nextGoldAt <= timer.currentFrameTimestamp) {
           // removed, since the enemies start spawing right away now
           //if (introSceneNumber > 98) {
-          player_nextGoldAt = currentFrameTimestamp + ms_per_gold;
+          player_nextGoldAt = timer.currentFrameTimestamp + settings.ms_per_gold;
           player_Gold++;
           updateGoldGUI();
           //}
@@ -199,7 +193,7 @@ angular.module('game.states.play', [])
           simstepsrequired = 10;
           unsimulatedms = 0;
         }
-        lastframetime = currentFrameTimestamp;
+        lastframetime = timer.currentFrameTimestamp;
 
         for (var sims = 0; sims < simstepsrequired; sims++) {
 
@@ -208,14 +202,14 @@ angular.module('game.states.play', [])
           framecount++;
 
           // do we need to spawn another entity?
-          if ((wave_next_spawntime !== 0) && wave_next_spawntime <= currentFrameTimestamp) {
-            wave_next_spawntime = currentFrameTimestamp + wave_spawn_interval_ms;
+          if ((enemyWave.next_spawntime !== 0) && enemyWave.next_spawntime <= timer.currentFrameTimestamp) {
+            enemyWave.next_spawntime = timer.currentFrameTimestamp + enemyWave.spawnInterval_ms;
             waveSpawnNextEntity();
           }
 
           // animate the entities
           if (entities) {
-            entities.forEach(entityAI);
+            entities.forEach(entityAI.update);
           }
 
           // useful for other types of games (such as ones with auto-scrolling):
@@ -223,7 +217,7 @@ angular.module('game.states.play', [])
           // this interferes with "falling off the edge" however
           // viewport.forceInside(sprite, 10);
 
-          //viewport.centerAround(game_objects.at(0)); // fixme
+          //viewport.centerAround(sprite.game_objects.at(0)); // fixme
           // should we follow the first known entity?
 
           // this works but we want tween to control it with moveCamera(px,py);
@@ -250,7 +244,7 @@ angular.module('game.states.play', [])
           if (buildMenuOverlay1) {
             var fundingPercent;
 
-            fundingPercent = player_Gold / buildCost[0];
+            fundingPercent = player_Gold / settings.buildCost[0];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
               buttonHighlight[0].setImage(buttonHighlightImageON);
@@ -259,7 +253,7 @@ angular.module('game.states.play', [])
             }
             buildMenuOverlay1.setHeight(buildMenuOverlayHeight - (buildMenuOverlayHeight * fundingPercent));
 
-            fundingPercent = player_Gold / buildCost[1];
+            fundingPercent = player_Gold / settings.buildCost[1];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
               buttonHighlight[1].setImage(buttonHighlightImageON);
@@ -268,7 +262,7 @@ angular.module('game.states.play', [])
             }
             buildMenuOverlay2.setHeight(buildMenuOverlayHeight - (buildMenuOverlayHeight * fundingPercent));
 
-            fundingPercent = player_Gold / buildCost[2];
+            fundingPercent = player_Gold / settings.buildCost[2];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
               buttonHighlight[2].setImage(buttonHighlightImageON);
@@ -278,18 +272,19 @@ angular.module('game.states.play', [])
             buildMenuOverlay3.setHeight(buildMenuOverlayHeight - (buildMenuOverlayHeight * fundingPercent));
           }
 
-          if (particles_enabled)
+          if (particleSystem.particles_enabled) {
             updateParticles();
-
-        } // end sims loop for FPS independence
+          }
+        }
 
         // one or more collisions above may have set this to true
-        if (pendingLevelComplete)
-          levelComplete();
+        if (level.pendingLevelComplete) {
+          level.complete();
+        }
 
-        profile_end('UPDATE SIMULATION');
+        profiler.end('UPDATE SIMULATION');
 
-      }; // end update function
+      };
 
       /**
        * the primary game render loop - called every frame during play
@@ -301,7 +296,7 @@ angular.module('game.states.play', [])
           return;
         }
 
-        profile_start('DRAW EVERYTHING');
+        profiler.start('DRAW EVERYTHING');
 
         if (use_parallax_background && parallax) {
           parallax.draw();
@@ -313,16 +308,16 @@ angular.module('game.states.play', [])
 
         viewport.apply(function () {
 
-          game_objects.draw(); // all the non tilemap moving objects - just the terrain background and build menu for now!
+          sprite.game_objects.draw(); // all the non tilemap moving objects - just the terrain background and build menu for now!
 
           if (entities)
             entities.drawIf(viewport.isPartlyInside);
-          if (healthbarsprites)
-            healthbarsprites.drawIf(viewport.isPartlyInside);
+          if (sprite.healthbar_sprites)
+            sprite.healthbar_sprites.drawIf(viewport.isPartlyInside);
 
-          profile_start('particles');
-          particles.drawIf(viewport.isPartlyInside);
-          profile_end('particles');
+          profiler.start('particleSystem.particles');
+          particleSystem.particles.drawIf(viewport.isPartlyInside);
+          profiler.end('particleSystem.particles');
 
         });
 
@@ -340,7 +335,7 @@ angular.module('game.states.play', [])
         if (currentIntroCinematicSprite)
           currentIntroCinematicSprite.draw();
 
-        profile_end('DRAW EVERYTHING');
+        profiler.end('DRAW EVERYTHING');
 
       }; // PlayState.draw
 

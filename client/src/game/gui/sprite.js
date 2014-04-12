@@ -5,18 +5,18 @@ angular.module('game.gui.sprite', [])
     return {
 
       game_objects: undefined, // a spritelist of dummy objects - just rendered sprites with no AI
-      guiButtonSprites: undefined, // a spritelist of sprites that you can click - each has a .action() callback - see guiClickMaybe()
+      button_sprites: undefined, // a spritelist of sprites that you can click - each has a .action() callback - see event.clickMaybe()
 
       // sprites aplenty
       entities: [], // a sprite list filled with entities
       teams: [], // an array of spritelists, index is team number
-      healthbarsprites: [], // used and updated by entities
-      healthbarImage: [], // an array of images shared by all healthbar sprites
-      HEALTHBAROFFSET: -28, // pixels offset in Y from parent entity
+      healthbar_sprites: [], // used and updated by entities
+      healthbar_image: [], // an array of images shared by all healthbar sprites
+      healthbar_offset: -28, // pixels offset in Y from parent entity
 
-      towerImages: [], // three images used for building towers in spawnEntity()
+      towerImages: [], // three images used for building towers in spawner.spawn()
 
-      BASE_ENTITY_SPEED: 0.5, // pixels per simulation step (1/60th sec) - in debug mode, move FAST for testing
+      base_entity_speed: 0.5, // pixels per simulation step (1/60th sec) - in debug mode, move FAST for testing
       entity_framesize: [32, 32], // pixel dimensions of the entity sprite (if any)
       num_entities: 0, // depends on the entities layer in the level data
       sprite_sheet: undefined, // the level tile map's data sprite sheet image
@@ -28,9 +28,9 @@ angular.module('game.gui.sprite', [])
        * because each item has a different size and thus
        * the jaws.Spritesheet class is insufficient
        */
-      chop: function chopImage(image, x, y, width, height) {
+      chop: function chop(image, x, y, width, height) {
         if (!image)
-          throw "chopImage with an undefined image";
+          throw "sprite.chop with an undefined image";
         var cut = document.createElement("canvas");
         cut.width = width;
         cut.height = height;
@@ -45,7 +45,7 @@ angular.module('game.gui.sprite', [])
        */
       extract: function extractSprite(fromthisimage, x, y, width, height, params) {
         params = params || {};
-        var extracted = chopImage(fromthisimage, x, y, width, height);
+        var extracted = sprite.chop(fromthisimage, x, y, width, height);
         params.image = extracted;
         return new jaws.Sprite(params);
       },
@@ -102,7 +102,7 @@ angular.module('game.gui.sprite', [])
       },
 
       /**
-       * Changes the sprites used by the GoldGUI,
+       * Changes the sprites used by the goldGui.instance,
        * counting by 1 each call until we reach player_Gold
        */
       updateGold: function updateGoldGUI() {
@@ -119,7 +119,7 @@ angular.module('game.gui.sprite', [])
             displayedGold--;
         }
 
-        updateGUIsprites(GoldGUI, displayedGold);
+        updateGUIsprites(goldGui.instance, displayedGold);
       }
     };
   });

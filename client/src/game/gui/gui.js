@@ -1,5 +1,10 @@
 angular.module('game.gui', [
-  'game.gui.hud'
+  'game.gui.hud',
+  'game.gui.background',
+  'game.gui.build',
+  'game.gui.sprite',
+  'game.gui.tile',
+  'game.gui.viewport'
 ])
 
 .factory('gui', funtion () {
@@ -33,8 +38,7 @@ angular.module('game.gui', [
      * this function allows TowerGameStarterKit games to be "responsive"
      */
     liquidLayout: function liquidLayoutGUI() {
-      if (debugmode)
-        log('liquidLayoutGUI');
+      $log.debug('liquidLayoutGUI');
 
       var n = 0; // gui sprite loop counter
 
@@ -58,26 +62,26 @@ angular.module('game.gui', [
         PausedGUI.moveTo((jaws.width / 2) | 0, (jaws.height / 2) | 0);
       // move the gui timer/score/count
 
-      if (WaveGUIlabel)
-        WaveGUIlabel.moveTo(wave_gui_x, wave_gui_y);
-      if (GoldGUIlabel)
-        GoldGUIlabel.moveTo(gold_gui_x, gold_gui_y);
-      if (HealthGUIlabel)
-        HealthGUIlabel.moveTo(health_gui_x, health_gui_y);
+      if (waveGui.label)
+        waveGui.label.moveTo(waveGui.x, waveGui.y);
+      if (goldGui.label)
+        goldGui.label.moveTo(goldGui.x, goldGui.y);
+      if (healthGui.label)
+        healthGui.label.moveTo(healthGui.x, healthGui.y);
 
-      if (WaveGUI) {
-        for (n = 0; n < wave_gui_digits; n++) {
-          WaveGUI.at(n + 1).moveTo(wave_gui_x + wave_gui_digits_offset + (wave_gui_spacing * wave_gui_digits) - (wave_gui_spacing * n), wave_gui_y);
+      if (waveGui.instance) {
+        for (n = 0; n < waveGui.digits; n++) {
+          waveGui.instance.at(n + 1).moveTo(waveGui.x + waveGui.digits_offset + (waveGui.spacing * waveGui.digits) - (waveGui.spacing * n), waveGui.y);
         }
       }
-      if (GoldGUI) {
-        for (n = 0; n < gold_gui_digits; n++) {
-          GoldGUI.at(n + 1).moveTo(gold_gui_x + gold_gui_digits_offset + (gold_gui_spacing * gold_gui_digits) - (gold_gui_spacing * n), gold_gui_y);
+      if (goldGui.instance) {
+        for (n = 0; n < goldGui.digits; n++) {
+          goldGui.instance.at(n + 1).moveTo(goldGui.x + goldGui.digits_offset + (goldGui.spacing * goldGui.digits) - (goldGui.spacing * n), goldGui.y);
         }
       }
-      if (HealthGUI) {
-        for (n = 0; n < health_gui_digits; n++) {
-          HealthGUI.at(n + 1).moveTo(health_gui_x + health_gui_digits_offset + (health_gui_spacing * health_gui_digits) - (health_gui_spacing * n), health_gui_y);
+      if (healthGui.instance) {
+        for (n = 0; n < healthGui.digits; n++) {
+          healthGui.instance.at(n + 1).moveTo(healthGui.x + healthGui.digits_offset + (healthGui.spacing * healthGui.digits) - (healthGui.spacing * n), healthGui.y);
         }
       }
     }

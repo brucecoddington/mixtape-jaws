@@ -56,7 +56,7 @@ angular.module('game.states.intro', [])
           introCinematicBG = null;
           if (debugmode)
             log('introCinamatic is over: starting waves!');
-          wave_next_spawntime = currentFrameTimestamp - 1; // NOW!
+          enemyWave.next_spawntime = timer.currentFrameTimestamp - 1; // NOW!
           return;
         }
 
@@ -133,7 +133,7 @@ angular.module('game.states.intro', [])
 
           // these are clickable (to skip the intro)
           // fixme todo buggy: skipping intro makes WAVE timings overlap! #seehere
-          // guiButtonSprites.push(introCinematicSprites[introSceneNumber]);
+          // button_sprites.push(introCinematicSprites[introSceneNumber]);
         }
         // don't let the previous one accept clicks
         if (currentIntroCinematicSprite)
@@ -146,7 +146,7 @@ angular.module('game.states.intro', [])
 
       skip: function introCinematicSkip() {
         if (debugmode)
-          log('Skipping intro cinematic due to clicking a sprite in guiButtonSprites that has an action()');
+          log('Skipping intro cinematic due to clicking a sprite in button_sprites that has an action()');
         introSceneNumber = 999;
         introCinematic();
       }

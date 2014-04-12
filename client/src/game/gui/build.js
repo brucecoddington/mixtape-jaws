@@ -7,18 +7,18 @@ angular.module('game.gui.build', [])
       // the ring build menu overlay only appears over buildable land we click
       buildMenuActive: false,
       // we click neighbor tiles to actually build when menu is open fixme todo use sprite collide?
-      FAR_AWAY: -999999,
-      buildChoice1tileX: FAR_AWAY,
-      buildChoice1tileY: FAR_AWAY,
-      buildChoice2tileX: FAR_AWAY,
-      buildChoice2tileY: FAR_AWAY,
-      buildChoice3tileX: FAR_AWAY,
-      buildChoice3tileY: FAR_AWAY,
+      
+      buildChoice1tileX: settings.farAway,
+      buildChoice1tileY: settings.farAway,
+      buildChoice2tileX: settings.farAway,
+      buildChoice2tileY: settings.farAway,
+      buildChoice3tileX: settings.farAway,
+      buildChoice3tileY: settings.farAway,
       // where the next tower will be placed
-      buildPendingPixelX: FAR_AWAY,
-      buildPendingPixelY: FAR_AWAY,
-      buildPendingTileX: FAR_AWAY,
-      buildPendingTileY: FAR_AWAY,
+      buildPendingPixelX: settings.farAway,
+      buildPendingPixelY: settings.farAway,
+      buildPendingTileX: settings.farAway,
+      buildPendingTileY: settings.farAway,
       // the sprites used by the build menu:
       buildMenuSprite: null,
       // the overlays that obscure items we can't afford
@@ -47,17 +47,17 @@ angular.module('game.gui.build', [])
         if (debugmode)
           log('Turning off the buildMenu');
         buildMenuActive = false;
-        buildMenuMove(FAR_AWAY, FAR_AWAY);
-        buildChoice1tileX = FAR_AWAY;
-        buildChoice1tileY = FAR_AWAY;
-        buildChoice2tileX = FAR_AWAY;
-        buildChoice2tileY = FAR_AWAY;
-        buildChoice3tileX = FAR_AWAY;
-        buildChoice3tileY = FAR_AWAY;
-        buildPendingPixelX = FAR_AWAY;
-        buildPendingPixelY = FAR_AWAY;
-        buildPendingTileX = FAR_AWAY;
-        buildPendingTileY = FAR_AWAY;
+        buildMenuMove(settings.farAway, settings.farAway);
+        buildChoice1tileX = settings.farAway;
+        buildChoice1tileY = settings.farAway;
+        buildChoice2tileX = settings.farAway;
+        buildChoice2tileY = settings.farAway;
+        buildChoice3tileX = settings.farAway;
+        buildChoice3tileY = settings.farAway;
+        buildPendingPixelX = settings.farAway;
+        buildPendingPixelY = settings.farAway;
+        buildPendingTileX = settings.farAway;
+        buildPendingTileY = settings.farAway;
       }
     };
   });

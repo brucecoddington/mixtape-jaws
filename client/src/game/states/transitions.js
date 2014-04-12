@@ -11,8 +11,7 @@ angular.module('game.states.transitions', [])
 
       this.setup = function () {
 
-        if (debugmode)
-          log('Game State: transition after level ' + current_level_number);
+        $log.debug('Game State: transition after level ' + current_level_number);
 
         // special message that tells C# whether or not to send back button events to js or handle natively
         console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
@@ -28,16 +27,16 @@ angular.module('game.states.transitions', [])
         if (game_timer)
           window.clearInterval(game_timer);
 
-        transitionEndtime = new Date().valueOf() + TRANSITION_LENGTH_MS; // five seconds
+        transition.endtime = new Date().valueOf() + transition.length_ms; // five seconds
 
         game_paused = true; // no clock updates
 
-        if (transition_mode == TRANSITION_GAME_OVER) {
+        if (transition.mode == transition.gameOver) {
           //sfxdefeat();
           sfx.play('Defeat');
         }
 
-        if (transition_mode == TRANSITION_LEVEL_COMPLETE) {
+        if (transition.mode == transition.levelComplete) {
           current_level_number++; // upcoming level
           //sfxvictory()
           sfx.play('Victory');
@@ -52,12 +51,12 @@ angular.module('game.states.transitions', [])
         // wobble just for fun
         // msgboxSprite.scaleTo(0.75 + (Math.sin(new Date().valueOf() * 0.001) / (Math.PI * 2)));
 
-        if (particles_enabled)
+        if (particleSystem.particles_enabled)
           updateParticles();
 
         // fireworks!
         if (Math.random() > 0.92) {
-          startParticleSystem(jaws.width / 4 + Math.random() * jaws.width / 2, jaws.height / 2 - 200 + (Math.random() * 400));
+          particleSystem.start(jaws.width / 4 + Math.random() * jaws.width / 2, jaws.height / 2 - 200 + (Math.random() * 400));
         }
 
         if (use_parallax_background) {
@@ -65,14 +64,14 @@ angular.module('game.states.transitions', [])
           titlebackground.camera_x += 4;
         }
 
-        if (transitionEndtime < (new Date().valueOf())) {
+        if (transition.endtime < (new Date().valueOf())) {
 
           if (debugmode)
             log('transition time is up');
 
           game_paused = false; // keyboard doesn't reset this
 
-          if (transition_mode == TRANSITION_GAME_OVER) {
+          if (transition.mode == transition.gameOver) {
             if (debugmode)
               log('transitioning from game over to titlescreen');
             gameOver(false);
@@ -97,7 +96,7 @@ angular.module('game.states.transitions', [])
         if (use_parallax_background)
           titlebackground.draw();
         msgboxSprite.draw();
-        if (transition_mode == TRANSITION_GAME_OVER) {
+        if (transition.mode == transition.gameOver) {
           gameoverSprite.draw();
           youloseSprite.draw();
         } else {
@@ -112,8 +111,8 @@ angular.module('game.states.transitions', [])
             beatTheGameSprite.draw();
           }
         }
-        if (particles_enabled)
-          particles.draw();
+        if (particleSystem.particles_enabled)
+          particleSystem.particles.draw();
 
       }; // transition screen draw function
 

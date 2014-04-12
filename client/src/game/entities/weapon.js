@@ -15,7 +15,7 @@ angular.module('game.entities.weapon', [])
 
   .factory('Weapon', function (weaponType, damageType) {
   
-    return function GameWeapon(type) {
+    return function Weapon(type) {
       this.self = this;
       this.damage = 25; // + or -: imagine healing towers?
       this.radius = 200; // attack range
@@ -25,24 +25,24 @@ angular.module('game.entities.weapon', [])
 
       switch (type) {
       case weaponType.FIRE:
-        this.projectilenumber = particleFIRE;
+        this.projectilenumber = particle.fire;
         this.damage = 40; // three hits to kill
         this.damagetype = damageType.MAGICAL;
-        this.particleHit = particleFIREHIT;
+        this.particleHit = particle.fireHit;
         this.soundEffectName = 'shootFire';
         break;
       case weaponType.ENERGY:
-        this.projectilenumber = particleENERGY;
+        this.projectilenumber = particle.energy;
         this.damage = 75; // two hits to kill
         this.damagetype = damageType.SLOW;
-        this.particleHit = particleENERGYHIT;
+        this.particleHit = particle.energyHit;
         this.soundEffectName = 'hitEnergy';
         break;
       default: // case weaponType.ARROWS:
-        this.projectilenumber = particleARROW;
+        this.projectilenumber = particle.arrow;
         this.damage = 25; // four hits to kill
         this.damagetype = damageType.PHYSICAL;
-        this.particleHit = particleARROWHIT;
+        this.particleHit = particle.arrowHit;
         this.soundEffectName = 'shootArrow';
         break;
       }
