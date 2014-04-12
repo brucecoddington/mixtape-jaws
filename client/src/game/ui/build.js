@@ -1,4 +1,4 @@
-angular.module('game.gui.build', [
+angular.module('game.ui.build', [
 
 ])
 

@@ -1,6 +1,6 @@
 angular.module('game.engine.pathfinder', [
   'game.engine.profiler',
-  'game.gui.tile'
+  'game.ui.tile'
 ])
 
 .factory('pathfinder', function ($log, profiler, tile) {

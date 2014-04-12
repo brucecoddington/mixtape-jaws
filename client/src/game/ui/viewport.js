@@ -1,4 +1,4 @@
-angular.module('game.gui.viewport', [])
+angular.module('game.ui.viewport', [])
 
 .factory('viewport', function ($window) {
 

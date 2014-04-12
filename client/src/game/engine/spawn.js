@@ -1,5 +1,5 @@
 angular.module('game.engine.spawn', [
-  'game.gui.sprite',
+  'game.ui.sprite',
   'game.engine.profiler',
   'game.engine.level'
 ])
@@ -7,8 +7,8 @@ angular.module('game.engine.spawn', [
 .value('walker', {
   // our walking units
   entity_animation_framerate: 100, // ms per frame (8 frame walkcycle)
-  entityanimation: [], // [1..3] the sprite sheet for our four walking units, split into frames
-  includeDeadBodies: true // if false, they simply dissappear when killed
+  entity_animation: [], // [1..3] the sprite sheet for our four walking units, split into frames
+  include_dead_bodies: true // if false, they simply dissappear when killed
 })
 
 .factory('spawner', function ($log, profiler, sprite, walker, level) {
@@ -53,11 +53,11 @@ angular.module('game.engine.spawn', [
 
       // all image frames for all entities
       // we currently use four different units: 1..4
-      if (!walker.entityanimation.length) {
-        $log.debug('Lazy init walker.entityanimations');
+      if (!walker.entity_animation.length) {
+        $log.debug('Lazy init walker.entity_animations');
         $log.debug("Chopping up unit1 animation spritesheet...");
 
-        walker.entityanimation[1] = new jaws.Animation({
+        walker.entity_animation[1] = new jaws.Animation({
           sprite_sheet : jaws.assets.get("unit1.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
@@ -66,7 +66,7 @@ angular.module('game.engine.spawn', [
 
         $log.debug("Chopping up unit2 animation spritesheet...");
         
-        walker.entityanimation[2] = new jaws.Animation({
+        walker.entity_animation[2] = new jaws.Animation({
           sprite_sheet : jaws.assets.get("unit2.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
@@ -75,7 +75,7 @@ angular.module('game.engine.spawn', [
 
         $log.debug("Chopping up unit3 animation spritesheet...");
         
-        walker.entityanimation[3] = new jaws.Animation({
+        walker.entity_animation[3] = new jaws.Animation({
           sprite_sheet : jaws.assets.get("unit3.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
@@ -84,7 +84,7 @@ angular.module('game.engine.spawn', [
 
         $log.debug("Chopping up unit4 animation spritesheet...");
         
-        walker.entityanimation[4] = new jaws.Animation({
+        walker.entity_animation[4] = new jaws.Animation({
           sprite_sheet : jaws.assets.get("unit4.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
@@ -92,22 +92,22 @@ angular.module('game.engine.spawn', [
         });
       }
 
-      if (!towerImages.length) {
-        $log.debug('Lazy init towerImages');
-        towerImages[1] = sprite.chop(jaws.assets.get("entities.png"), 0, 32, 64, 96);
-        towerImages[2] = sprite.chop(jaws.assets.get("entities.png"), 64, 32, 64, 96);
-        towerImages[3] = sprite.chop(jaws.assets.get("entities.png"), 128, 32, 64, 96);
+      if (!sprite.tower_images.length) {
+        $log.debug('Lazy init sprite.tower_images');
+        sprite.tower_images[1] = sprite.chop(jaws.assets.get("entities.png"), 0, 32, 64, 96);
+        sprite.tower_images[2] = sprite.chop(jaws.assets.get("entities.png"), 64, 32, 64, 96);
+        sprite.tower_images[3] = sprite.chop(jaws.assets.get("entities.png"), 128, 32, 64, 96);
       }
 
       if (team === team.bad) { // then we want walking avatars
         // we make new anims for each entity so they aren't synched the same
-        anentity.idle_anim = walker.entityanimation[race].slice(0, 1);
-        anentity.attack_anim = walker.entityanimation[race].slice(0, 1);
-        anentity.move_n = walker.entityanimation[race].slice(0, 7);
-        anentity.move_w = walker.entityanimation[race].slice(8, 15);
-        anentity.move_s = walker.entityanimation[race].slice(16, 23);
-        anentity.move_e = walker.entityanimation[race].slice(24, 31);
-        //anentity.deathanim = walker.entityanimation[race].slice(32, 31);
+        anentity.idle_anim = walker.entity_animation[race].slice(0, 1);
+        anentity.attack_anim = walker.entity_animation[race].slice(0, 1);
+        anentity.move_n = walker.entity_animation[race].slice(0, 7);
+        anentity.move_w = walker.entity_animation[race].slice(8, 15);
+        anentity.move_s = walker.entity_animation[race].slice(16, 23);
+        anentity.move_e = walker.entity_animation[race].slice(24, 31);
+        //anentity.deathanim = walker.entity_animation[race].slice(32, 31);
         anentity.currentAnimation = anentity.move_n;
         anentity.setImage(anentity.move_n.frames[0]);
         anentity.speed = sprite.base_entity_speed;
@@ -118,7 +118,7 @@ angular.module('game.engine.spawn', [
 
       } else {// a tower - goodguy player
         
-        anentity.setImage(towerImages[race]);
+        anentity.setImage(sprite.tower_images[race]);
         // the artwork needs a nudge since it is taller - fixme todo: hardcoded tower sprite size
         anentity.anchor_y = 0.75;
         anentity.cacheOffsets();
@@ -148,7 +148,7 @@ angular.module('game.engine.spawn', [
       sprite.healthbar_sprites.push(anentity.healthbar_sprite);
 
       // store this sprite for easy access and iteration during update and draw
-      entities.push(anentity);
+      sprite.entities.push(anentity);
 
       // optimization for collision detection, etc.
       sprite.teams[team].push(anentity);
@@ -162,13 +162,18 @@ angular.module('game.engine.spawn', [
     remove: function removeEntity(victim) {
       $log.debug('removeEntity');
       victim.active = false; // ready to respawn/reuse
+      
       // stop drawing and updating
-      entities.remove(victim);
+      sprite.entities.remove(victim);
+      
       // stop checking collisions
       sprite.teams[victim.team].remove(victim);
+      
       // stop drawing its healthbar
-      if (victim.healthbar_sprite)
+      if (victim.healthbar_sprite) {
         sprite.healthbar_sprites.remove(victim.healthbar_sprite);
+      }
+      
       // check if we completed the level (eg all badguys destroyed?) fixme todo: maybe just current ones: waves
       level.checkComplete();
     }

@@ -1,8 +1,12 @@
 angular.module('game.engine.level', [
-  'game.engine.profiler'
+  'game.engine.profiler',
+  'game.states.transitions',
+  'game.ui.sprite',
+  'game.engine.pathfinder',
+  'game.ui.viewport'
 ])
 
-.factory('level', function (profiler, levelTransistionState) {
+.factory('level', function ($log, profiler, levelTransistionState, pathfinder, sprite, gameplay, viewport, settings, goldGui, player, transition, enemyWave) {
 
   var level = {
 
@@ -12,8 +16,8 @@ angular.module('game.engine.level', [
     // levels
     data: [], // an array of json level data objects
     starting_level_number: 0, // should be zero except when testing
-    current_level_number: level.starting_level_number, // which one are we playing?
-    pendingLevelComplete: false, // do we need to change levels next frame?
+    current_level_number: level.level.starting_level_number, // which one are we playing?
+    pending_level_complete: false, // do we need to change levels next frame?
 
    /**
     * inits a new level using json data: sets level specific variables 
@@ -81,7 +85,7 @@ angular.module('game.engine.level', [
     complete: function complete() {
       $log.debug('Level ' + level.current_level_number + ' complete!');
       sprite.updateGui(goldGui.instance, player.gold); // immediate update to proper value
-      level.pendingLevelComplete = false;
+      level.pending_level_complete = false;
       jaws.switchGameState(levelTransistionState);
     },
 
@@ -89,7 +93,7 @@ angular.module('game.engine.level', [
     checkComplete: function checkComplete() {
       if (player.health < 1) {
         $log.debug('The player has no more health! LEVEL COMPLETE GAME OVER!'); // fires 2x or more?
-        level.pendingLevelComplete = true;
+        level.pending_level_complete = true;
         transition.mode = transition.gameOver;
         return;
       }
@@ -100,7 +104,7 @@ angular.module('game.engine.level', [
         if (enemyWave.none_left) {
           $log.debug('And there are no pending waves! LEVEL COMPLETE SUCCESS!');
           transition.mode = transition.level.complete;
-          level.pendingLevelComplete = true; // handle edge case: we hit >1 in the same frame
+          level.pending_level_complete = true; // handle edge case: we hit >1 in the same frame
         }
       }
     }

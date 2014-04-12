@@ -3,7 +3,7 @@ angular.module('game.entities.enemy', [
   'game.engine.spawn'
 ])
 
-.factory('enemyWave', function ($log, particleSystem, spawner) {
+.factory('enemyWave', function ($log, particleSystem, spawner, timer, level) {
   // Game data for enemy waves
   
   var enemyWave = {

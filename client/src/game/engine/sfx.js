@@ -1,6 +1,6 @@
 angular.module('game.engine.sfx', [])
 
-  .factory('sound', function ($log, profiler) {
+  .factory('sound', function ($log, profiler, sfx) {
 
     var sound = {
       // sound

@@ -1,10 +1,6 @@
 angular.module('main', [
   'templates-main',
-  'game.container',
-  'game.screens',
-  'game.entities',
-  'game.data',
-  'game.engine'
+  'game.container'
 ])
 
 .config(function ($logProvider) {

@@ -1,13 +1,13 @@
 angular.module('game.engine.ai', [
   'game.engine.sfx',
   'game.entities.player',
-  'game.gui.sprite',
-  'game.engine.particleSystem.particles',
+  'game.ui.sprite',
+  'game.engine.particles',
   'game.engine.spawn',
   'game.engine.level',
   'game.entities.enemy',
   'game.engine.timer',
-  'game.gui.tile'
+  'game.ui.tile'
 ])
 
 .factory('entityAI', function (sfx, player, sprite, particleSystem, spawner, level, walker, timer, tile) {
@@ -47,7 +47,6 @@ angular.module('game.engine.ai', [
       // move the healthbar
       if (nme.healthbar_sprite) {
         nme.healthbar_sprite.moveTo(nme.x, nme.y + sprite.healthbar_offset);
-        //nme.healthbar_sprite.setImage(sprite.healthbar_image[0]); // only change when damaged!
       }
 
       // entities can emit particleSystem.particles - nice for smoke trails
@@ -93,7 +92,7 @@ angular.module('game.engine.ai', [
               nme.dead = true;
               nme.speed = 0;
 
-              if (!walker.includeDeadBodies) {
+              if (!walker.include_dead_bodies) {
                 spawner.remove(nme);
               } else {
                 // a little random death location

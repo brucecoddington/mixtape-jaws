@@ -1,8 +1,11 @@
-angular.module('game.gui.tile', [
-  'game.engine.pathfinder'
+angular.module('game.ui.tile', [
+  'game.engine.pathfinder',
+  'game.engine.timer',
+  'game.ui.build',
+  'game.engine.config'
 ])
 
-.factory('tile', function (pathfinder) {
+.factory('tile', function (pathfinder, timer, buildMenu, sprite, sfx, player, settings, camera) {
 
   var tile = {
     size: 64, // skelevator 32, // pixel dimensions of the level spritesheet tiles
@@ -50,7 +53,6 @@ angular.module('game.gui.tile', [
       }
 
       var cameraMoveRequired = false;
-
       var tileStyleClicked = tile.getType(tileX, tileY);
 
       // game world pixel coords
@@ -140,7 +142,7 @@ angular.module('game.gui.tile', [
         cameraMoveRequired = true;
       
       } else {
-        settings.selectedBuildingStyle = settings.farAway;
+        settings.selected_building_style = settings.farAway;
 
         // fixme todo this should never be true?
         if (tile.getType(buildMenu.pending_tileX, buildMenu.pending_tileY) !== tile.type.buildable) {
@@ -148,29 +150,29 @@ angular.module('game.gui.tile', [
         }
 
         if (tileX == buildMenu.choice1_tileX && tileY === buildMenu.choice1_tileY) {
-          settings.selectedBuildingStyle = 0;
+          settings.selected_building_style = 0;
         }
 
         if (tileX == buildMenu.choice2_tileX && tileY === buildMenu.choice2_tileY) {
-          settings.selectedBuildingStyle = 1;
+          settings.selected_building_style = 1;
         }
         
         if (tileX == buildMenu.choice3_tileX && tileY === buildMenu.choice3_tileY) {
-          settings.selectedBuildingStyle = 2;
+          settings.selected_building_style = 2;
         }
 
-        if (settings.selectedBuildingStyle === settings.farAway) {
+        if (settings.selected_building_style === settings.farAway) {
           $log.debug('User cancelled build menu');
           buildMenu.off();
           cameraMoveRequired = true;
 
         } else {
 
-          $log.debug('Requesting to build tower ' + settings.selectedBuildingStyle);
+          $log.debug('Requesting to build tower ' + settings.selected_building_style);
 
           // can we afford it?
-          if (player.gold < settings.buildCost[settings.selectedBuildingStyle]) {
-            $log.debug('We cannot afford to build this unit: we have ' + player.gold + ' gold but need ' + settings.buildCost[settings.selectedBuildingStyle]);
+          if (player.gold < settings.build_cost[settings.selected_building_style]) {
+            $log.debug('We cannot afford to build this unit: we have ' + player.gold + ' gold but need ' + settings.build_cost[settings.selected_building_style]);
             sfx.play('NotEnoughMoney');
 
           } else {// we have enough money
@@ -179,15 +181,15 @@ angular.module('game.gui.tile', [
             particleSystem.start(buildMenu.pending_pixelX, buildMenu.pending_pixelY, particle.build);
 
             // spawn a new tower here
-            var justBuilt = spawner.spawn(buildMenu.pending_pixelX, buildMenu.pending_pixelY, settings.selectedBuildingStyle + 1, team.good); // tower 1,2,3
+            var justBuilt = spawner.spawn(buildMenu.pending_pixelX, buildMenu.pending_pixelY, settings.selected_building_style + 1, team.good); // tower 1,2,3
 
             // pay up!
-            player.gold -= settings.buildCost[settings.selectedBuildingStyle];
+            player.gold -= settings.build_cost[settings.selected_building_style];
 
             // debug fixme todo lame - buildMenu!
-            settings.selectedBuildingStyle++;
-            if (settings.selectedBuildingStyle > 2) {
-              settings.selectedBuildingStyle = 0;
+            settings.selected_building_style++;
+            if (settings.selected_building_style > 2) {
+              settings.selected_building_style = 0;
             }
 
             sprite.updateGold();

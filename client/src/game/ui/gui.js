@@ -1,10 +1,5 @@
-angular.module('game.gui', [
-  'game.gui.hud',
-  'game.gui.background',
-  'game.gui.build',
-  'game.gui.sprite',
-  'game.gui.tile',
-  'game.gui.viewport'
+angular.module('game.ui.gui', [
+  'game.ui.hud'
 ])
 
 .factory('gui', function ($log, waveGui, goldGui, healthGui) {

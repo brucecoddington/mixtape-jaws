@@ -1,4 +1,4 @@
-angular.module('game.gui.background', [])
+angular.module('game.ui.background', [])
   .value('background', {
     // the backgrounds
     use_parallax_background: false, // draw the looped bg

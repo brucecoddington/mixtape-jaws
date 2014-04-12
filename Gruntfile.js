@@ -10,28 +10,28 @@ module.exports = function (grunt) {
     'jawsjs/jaws.js',
     'howlerjs/howler.js',
     'tweenjs/build/tween.min.js',
-    '../../../node_modules/easystarjs/bin/easystar-0.1.6.js'//, // <- blech
+    '../../../node_modules/easystarjs/bin/easystar-0.1.6.js', // <- blech
 
     // jQuery and Related
-    // 'jquery/jquery.js',
-    // 'messenger/build/js/messenger.js',
+    'jquery/jquery.js',
+    'messenger/build/js/messenger.js',
 
-    // // bootstrap
-    // 'bootstrap/dist/js/bootstrap.js',
+    // bootstrap
+    'bootstrap/dist/js/bootstrap.js',
 
-    // // AngularJS libraries
-    // 'angular/angular.js',
-    // 'angular-cookies/angular-cookies.js',
-    // 'angular-resource/angular-resource.js',
-    // 'angular-sanitize/angular-sanitize.js',
-    // 'angular-animate/angular-animate.js',
+    // AngularJS libraries
+    'angular/angular.js',
+    'angular-cookies/angular-cookies.js',
+    'angular-resource/angular-resource.js',
+    'angular-sanitize/angular-sanitize.js',
+    'angular-animate/angular-animate.js',
 
-    // //NProgress
-    // 'nprogress/nprogress.js',
+    //NProgress
+    'nprogress/nprogress.js',
 
-    // // utilities
-    // 'lodash/dist/lodash.js',
-    // 'moment/moment.js'
+    // utilities
+    'lodash/dist/lodash.js',
+    'moment/moment.js'
   ],
 
   watchedFiles = [
@@ -365,27 +365,6 @@ module.exports = function (grunt) {
         src: 'client/src/**/*.js',
         dest: '<%= clientdist %>/app.js'
       }
-    },
-
-    shell: {
-      melonJS : {
-        options: {
-          stdout: true,
-          stderr: true,
-          execOptions: {
-            cwd: '<%= components %>/melonJS'
-          }
-        },
-        command: 'npm install'
-      },
-    },
-
-    // Runs dependency grunt builds
-    hub: {
-      melonJS: {
-        src: ['<%= components %>/melonJS/Gruntfile.js'],
-        tasks: ['concat', 'replace:dist']
-      }
     }
 
   });
@@ -440,8 +419,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-ngmin');
   grunt.loadNpmTasks('grunt-mixtape-run-app');
   grunt.loadNpmTasks('grunt-protractor-runner');
-  grunt.loadNpmTasks('grunt-shell');
-  grunt.loadNpmTasks('grunt-hub');
 
   // **********************************************************************************************
 
@@ -452,7 +429,7 @@ module.exports = function (grunt) {
   // almond.js and dist/debug/templates.js into the require.js file.
 
   grunt.registerTask('default', [
-    'clean', 'shell', 'hub', 'jshint', 'less', 'concat:css', 'html2js', 'concat:jsdeps', 'copy:vendor', 'copy:development'
+    'clean', 'jshint', 'less', 'concat:css', 'html2js', 'concat:jsdeps', 'copy:vendor', 'copy:development'
   ]);
 
   // Task to compile everything in development mode

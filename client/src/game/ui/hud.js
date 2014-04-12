@@ -1,4 +1,4 @@
-angular.module('game.gui.hud', [])
+angular.module('game.ui.hud', [])
   .factory('waveGui', function () {
     var wave = {
       instance: {}, // displays game time on the top left
@@ -12,7 +12,7 @@ angular.module('game.gui.hud', [])
     return wave;
   })
 
-  .factory('goldGui', function () {
+  .factory('goldGui', function (waveGui) {
     var gold = {
       instance: {}, // displays player.gold in the top middle
       label: 'Gold:', // "Gold:"
@@ -26,7 +26,7 @@ angular.module('game.gui.hud', [])
     return gold;
   })
 
-  .factory('healthGui', function () {
+  .factory('healthGui', function (goldGui) {
     var health = {
       instance: {}, // displays number of pickups left on the top right
       label: 'Health:', // "Health:"
@@ -40,7 +40,7 @@ angular.module('game.gui.hud', [])
   })
 
   // HUD (heads-up-display) of changing stats: Wave, Health and Gold
-  .factory('hud', function ($document, profiler) {
+  .factory('hud', function ($document, $logProvider, profiler, gui, goldGui, waveGui, healthGui, timer) {
 
     var hud = {
 
@@ -77,7 +77,7 @@ angular.module('game.gui.hud', [])
             timer.fps_framecount = 0;
 
             var profilestring = '';
-            if (debugmode) {
+            if ($logProvider.debugEnabled) {
               for (var pname in profiler.length) {
                 profilestring += '<br>' + pname + ':' + profiler.length[pname] + 'ms (max:' + profile_maxlen[pname] + 'ms)';
               }

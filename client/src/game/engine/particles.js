@@ -21,7 +21,7 @@ angular.module('game.engine.particles', [])
   
 })
 
-.factory('particleSystem', function (particle) {
+.factory('particleSystem', function ($log, profiler, particle) {
 
   var particleSystem = {
 
@@ -149,7 +149,7 @@ angular.module('game.engine.particles', [])
     /**
      * steps the particle effects simulation
      */
-    update: function particles.update() {
+    update: function update() {
       if (!particleSystem.particles_enabled) {
         return;
       }

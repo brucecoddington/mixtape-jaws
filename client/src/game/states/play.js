@@ -19,7 +19,7 @@ angular.module('game.states.play', [])
         enemyWave.entitynum = 0;
         enemyWave.next_spawntime = 0;
         
-        level.pendingLevelComplete = false;
+        level.pending_level_complete = false;
         
         buildMenu.pending_pixelX = settings.farAway;
         buildMenu.pending_pixelY = settings.farAway;
@@ -64,7 +64,7 @@ angular.module('game.states.play', [])
 
         // reset the player score if this is the first level
         // also, start the intro cinematic NPC dialogue
-        if (level.current_level_number == starting_level_number) {
+        if (level.current_level_number == level.starting_level_number) {
           player.gold = player_gold_startwith;
           player.next_gold_at = 0; // timestamp when we get another gold - fixme: wait a full second?
           intro.scene_number = 0;
@@ -88,7 +88,7 @@ angular.module('game.states.play', [])
           window.clearInterval(timer.game_timer);
         }
       
-        timer.game_timer = window.setInterval(stopwatchfunc, 1000);
+        timer.game_timer = window.setInterval(timer.tick, 1000);
 
         profiler.end("playstate setup");
 
@@ -198,7 +198,7 @@ angular.module('game.states.play', [])
           if (buildMenu.overlay1) {
             var fundingPercent;
 
-            fundingPercent = player.gold / settings.buildCost[0];
+            fundingPercent = player.gold / settings.build_cost[0];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
               buildMenu.button_highlight[0].setImage(buildMenu.button_highlight_image_on);
@@ -207,7 +207,7 @@ angular.module('game.states.play', [])
             }
             buildMenu.overlay1.setHeight(buildMenu.overlay_height - (buildMenu.overlay_height * fundingPercent));
 
-            fundingPercent = player.gold / settings.buildCost[1];
+            fundingPercent = player.gold / settings.build_cost[1];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
               buildMenu.button_highlight[1].setImage(buildMenu.button_highlight_image_on);
@@ -216,7 +216,7 @@ angular.module('game.states.play', [])
             }
             buildMenu.overlay2.setHeight(buildMenu.overlay_height - (buildMenu.overlay_height * fundingPercent));
 
-            fundingPercent = player.gold / settings.buildCost[2];
+            fundingPercent = player.gold / settings.build_cost[2];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
               buildMenu.button_highlight[2].setImage(buildMenu.button_highlight_image_on);
@@ -232,7 +232,7 @@ angular.module('game.states.play', [])
         }
 
         // one or more collisions above may have set this to true
-        if (level.pendingLevelComplete) {
+        if (level.pending_level_complete) {
           level.complete();
         }
 

@@ -2,13 +2,13 @@ angular.module('game.engine.timer', [
   'game.engine.transition'
 ])
 
-.factory('timer', function (transition) {
+.factory('timer', function (transition, gameplay, settings) {
   
   var timer = {
     // timer
-    timer.game_paused: 3, // 0=playing 1=paused 3=mainmenu
+    game_paused: 3, // 0=playing 1=paused 3=mainmenu
     allow_pausing: false, // this is a non-keyboard game
-    timer.game_timer: undefined, // set by SetInterval for the stopwatchfunc
+    game_timer: undefined, // set by SetInterval for the timer.tick
     game_over: true, // are we currently playing?
     frame_count: 0,
     last_frame_time: 0,
@@ -26,7 +26,7 @@ angular.module('game.engine.timer', [
      * tick function for a game timer - called once per second
      * this is often called the game's heartbeat clock
      */
-     tick: function stopwatchfunc() { // fixme todo unused
+     tick: function tick() { 
 
       if (!timer.timer.game_paused) {
         gameplay.time_remaining += gameplay.time_direction;

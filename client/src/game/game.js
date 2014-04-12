@@ -4,11 +4,11 @@ angular.module('game.container', [
   'game.data',
   'game.engine',
   'game.entities',
-  'game.gui',
+  'game.ui',
   'game.states'
 ])
 
-.factory('game', function (level0, level1, level2, level3) {
+.factory('game', function ($log, level0, level1, level2, level3, gui, timer, level, particles, sfx) {
 
   var debugTouchInfo = settings.farAway; // what spritemap tile # did we last touch?
 
@@ -18,13 +18,12 @@ angular.module('game.container', [
      * Switches game state to playState
      */
     start: function start() {
-      if (debugmode) {
-        log('START GAME NOW!');
-      }
+      $log.debug('START GAME NOW!');
+      
       gui.gui.showing_level_select_screen = false;
       timer.game_paused = false; // keyboard doesn't reset this
       //sfxstart();
-      level.current_level_number = starting_level_number; // start from the first level (or whichever the user selected)
+      level.current_level_number = level.starting_level_number; // start from the first level (or whichever the user selected)
       particles.clear();
       jaws.switchGameState(playState); // Start game!
     },
@@ -39,19 +38,19 @@ angular.module('game.container', [
       // the map is split into quadrants - which island did we click?
       if ((px < jaws.width / 2) && (py < jaws.height / 2)) {
         $log.debug('Selected LEVEL 0');
-        starting_level_number = 0;
+        level.starting_level_number = 0;
       
       } else if ((px >= jaws.width / 2) && (py < jaws.height / 2)) {
         $log.debug('Selected LEVEL 1');
-        starting_level_number = 1;
+        level.starting_level_number = 1;
       
       } else if ((px < jaws.width / 2) && (py >= jaws.height / 2)) {
         $log.debug('Selected LEVEL 2');
-        starting_level_number = 2;
+        level.starting_level_number = 2;
       
       } else if ((px >= jaws.width / 2) && (py >= jaws.height / 2)) {
         $log.debug('Selected LEVEL 3');
-        starting_level_number = 3;
+        level.starting_level_number = 3;
       }
 
       game.start();

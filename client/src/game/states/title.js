@@ -1,5 +1,5 @@
 angular.module('game.states.title', [
-  'game.gui.sprite'
+  'game.ui.sprite'
 ])
 
 /**

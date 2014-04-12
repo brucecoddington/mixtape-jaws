@@ -1,6 +1,6 @@
 angular.module('game.engine.profiler', [])
   
-.factory('profiler', function ($logProvider) {
+.factory('profiler', function ($log) {
 
   var profiler = {
     starts: [], // for debug only: performance PROFILER
@@ -13,7 +13,7 @@ angular.module('game.engine.profiler', [])
      * Only used when debugging to find areas of poor performance.
      */
     start: function start(name) {
-      if (!$logProvider.debugEnabled) {
+      if (!$log.debugEnabled) {
         return;
       }
 
@@ -25,7 +25,7 @@ angular.module('game.engine.profiler', [])
      * Call profiler.start using the same event name to begin
      */
     end: function end(name) {
-      if (!$logProvider.debugEnabled) {
+      if (!$log.debugEnabled) {
         return;
       }
 

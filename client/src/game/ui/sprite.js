@@ -1,9 +1,10 @@
-angular.module('game.gui.sprite', [
-  'game.gui.tile',
-  'game.entities.player'
+angular.module('game.ui.sprite', [
+  'game.ui.tile',
+  'game.entities.player',
+  'game.ui.hud'
 ])
 
-.factory('sprite', function (tile, player) {
+.factory('sprite', function (tile, player, goldGui) {
 
   return {
 
@@ -17,7 +18,7 @@ angular.module('game.gui.sprite', [
     healthbar_image: [], // an array of images shared by all healthbar sprites
     healthbar_offset: -28, // pixels offset in Y from parent entity
 
-    towerImages: [], // three images used for building towers in spawner.spawn()
+    tower_images: [], // three images used for building towers in spawner.spawn()
 
     base_entity_speed: 0.5, // pixels per simulation step (1/60th sec) - in debug mode, move FAST for testing
     entity_framesize: [32, 32], // pixel dimensions of the entity sprite (if any)

@@ -1,9 +1,9 @@
 angular.module('game.engine.event', [
-  'game.gui.viewport',
-  'game.gui.sprite'
+  'game.ui.viewport',
+  'game.ui.sprite'
 ])
   
-.factory('event', function ($log, $document, $window, viewport) {
+.factory('event', function ($log, $document, $window, viewport, sprite, gui) {
 
   var event = {
 
@@ -50,8 +50,6 @@ angular.module('game.engine.event', [
 
       evt.preventDefault();
 
-      //pointerDown[evt.pointerId] = true;
-      //lastPositions[evt.pointerId] = { x: evt.clientX, y: evt.clientY};
       var px = evt.clientX + viewport.instance.x;
       var py = evt.clientY + viewport.instance.y;
       var tx = Math.floor(px / tile.size);
