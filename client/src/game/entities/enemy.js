@@ -79,7 +79,7 @@ angular.module('game.entities.enemy', [
       if (enemyWave.entitynum === 0) // brand new wave just started
       {
         enemyWave.max = enemyWave.wave[level.current_level_number].length;
-        sprite.updateAll(waveGui.instance, ((enemyWave.current + 1) * 10) + enemyWave.max); // for "3 of 5" we send 35
+        sprite.updateGui(waveGui.instance, ((enemyWave.current + 1) * 10) + enemyWave.max); // for "3 of 5" we send 35
         $log.debug('NEW WAVE STARTING: ' + (enemyWave.current + 1) + ' of ' + enemyWave.max);
       }
 

@@ -22,7 +22,7 @@ angular.module('game.states.title', [
         $log.debug('TitleScreenState.setup');
 
         // used only for the particle decorations
-        titleframecount = 0;
+        gui.title_frame_count = 0;
 
         // if the game is running in a web page, we may want the loading screen to be invisible
         // CSS display:none, and the game will only appear when ready to play: harmless if unhidden/app.
@@ -35,8 +35,8 @@ angular.module('game.states.title', [
         jaws.preventDefaultKeys(["w", "a", "s", "d", "p", "space", "z", "up", "down", "right", "left"]);
 
         // the main menu background
-        if (!splashSprite)
-          splashSprite = new jaws.Sprite({
+        if (!gui.splash_sprite)
+          gui.splash_sprite = new jaws.Sprite({
               image : "titlescreen.png",
               x : (jaws.width / 2) | 0,
               y : (jaws.height / 2) | 0,
@@ -44,23 +44,23 @@ angular.module('game.states.title', [
             });
 
         // the level select screen - the second phase of our title screen main menu
-        if (!levelSelectSprite)
-          levelSelectSprite = new jaws.Sprite({
+        if (!gui.level_select_sprite)
+          gui.level_select_sprite = new jaws.Sprite({
               image : "level-select-screen.png",
               x : (jaws.width / 2) | 0,
               y : (jaws.height / 2) | 0,
               anchor : "center_center"
             });
         // so we can trap clicks on the map sprite
-        levelSelectSprite.action = levelSelectClick;
+        gui.level_select_sprite.action = levelSelectClick;
 
         // reset in between play sessions - a list of clickable buttons
         sprite.button_sprites = new jaws.SpriteList(); /// see event.clickMaybe()
-        sprite.button_sprites.push(levelSelectSprite);
+        sprite.button_sprites.push(gui.level_select_sprite);
 
         // the msgbox background - used for pause screen, gameover, level transitions
-        if (!msgboxSprite)
-          msgboxSprite = new jaws.Sprite({
+        if (!gui.msgbox_sprite)
+          gui.msgbox_sprite = new jaws.Sprite({
               image : "msgbox.png",
               x : (jaws.width / 2) | 0,
               y : (jaws.height / 2) | 0,
@@ -68,25 +68,25 @@ angular.module('game.states.title', [
             });
 
         // the numbers 0..9 in 32x32 spritesheet fontmap
-        // then we can use fontSpriteSheet.frames[num]
+        // then we can use gui.font_sheet.frames[num]
         if (debugmode)
           log("Chopping up font spritesheet...");
-        if (!fontSpriteSheet)
-          fontSpriteSheet = new jaws.SpriteSheet({
+        if (!gui.font_sheet)
+          gui.font_sheet = new jaws.SpriteSheet({
               image : "font.png",
               frame_size : [32, 32],
               orientation : 'down'
             });
 
         // the gui image has all sorts of labels, the credits screen, etc.
-        if (!guiSpriteSheet)
-          guiSpriteSheet = new jaws.Sprite({
+        if (!gui.sprite_sheet)
+          gui.sprite_sheet = new jaws.Sprite({
               image : "gui.png"
             });
 
         // the credits screen
-        if (!creditsSprite)
-          creditsSprite = extractSprite(guiSpriteSheet.image, 0, 32 * 17, 352, 224, {
+        if (!gui.credits_sprite)
+          gui.credits_sprite = extractSprite(gui.sprite_sheet.image, 0, 32 * 17, 352, 224, {
               x : (jaws.width / 2) | 0,
               y : ((jaws.height / 2) | 0) - 8,
               anchor : "center_center"
@@ -109,33 +109,33 @@ angular.module('game.states.title', [
           }
         }
 
-        displayedGold = 0; // we increment displayed score by 1 each frame until it shows true player_Gold
+        goldGui.displayed_gold = 0; // we increment displayed score by 1 each frame until it shows true player.gold
 
         // the HUD gui sprites: score, etc.
-        if (gui_enabled) {
+        if (gui.gui_enabled) {
 
           var n = 0; // temp loop counter
 
           if (!waveGui.label)
-            waveGui.label = extractSprite(guiSpriteSheet.image, 0, 32 * 14, 256, 32, {
+            waveGui.label = extractSprite(gui.sprite_sheet.image, 0, 32 * 14, 256, 32, {
                 x : waveGui.x,
                 y : waveGui.y,
                 anchor : "top_left"
               });
           if (!goldGui.label)
-            goldGui.label = extractSprite(guiSpriteSheet.image, 0, 32 * 16, 256, 32, {
+            goldGui.label = extractSprite(gui.sprite_sheet.image, 0, 32 * 16, 256, 32, {
                 x : goldGui.x,
                 y : goldGui.y,
                 anchor : "top_left"
               });
           if (!healthGui.label)
-            healthGui.label = extractSprite(guiSpriteSheet.image, 0, 32 * 15, 256, 32, {
+            healthGui.label = extractSprite(gui.sprite_sheet.image, 0, 32 * 15, 256, 32, {
                 x : healthGui.x,
                 y : healthGui.y,
                 anchor : "top_left"
               });
-          if (!PausedGUI)
-            PausedGUI = extractSprite(guiSpriteSheet.image, 0, 32 * 13, 352, 32, {
+          if (!gui.paused_sprite)
+            gui.paused_sprite = extractSprite(gui.sprite_sheet.image, 0, 32 * 13, 352, 32, {
                 x : (jaws.width / 2) | 0,
                 y : (jaws.height / 2) | 0,
                 anchor : "center_center"
@@ -152,7 +152,7 @@ angular.module('game.states.title', [
               waveGui.instance.push(new jaws.Sprite({
                   x : waveGui.x + waveGui.digits_offset + (waveGui.spacing * waveGui.digits) - (waveGui.spacing * n),
                   y : waveGui.y,
-                  image : fontSpriteSheet.frames[0],
+                  image : gui.font_sheet.frames[0],
                   anchor : "top_left"
                 }));
             }
@@ -170,7 +170,7 @@ angular.module('game.states.title', [
               goldGui.instance.push(new jaws.Sprite({
                   x : goldGui.x + goldGui.digits_offset + (goldGui.spacing * goldGui.digits) - (goldGui.spacing * n),
                   y : goldGui.y,
-                  image : fontSpriteSheet.frames[0],
+                  image : gui.font_sheet.frames[0],
                   anchor : "top_left"
                 }));
             }
@@ -187,53 +187,53 @@ angular.module('game.states.title', [
               healthGui.instance.push(new jaws.Sprite({
                   x : healthGui.x + healthGui.digits_offset + (healthGui.spacing * healthGui.digits) - (healthGui.spacing * n),
                   y : healthGui.y,
-                  image : fontSpriteSheet.frames[0],
+                  image : gui.font_sheet.frames[0],
                   anchor : "top_left"
                 }));
             }
           }
-        } // if (gui_enabled)
+        } // if (gui.gui_enabled)
 
         // create all the sprites used by the GUI
-        if (!menuSprite)
-          menuSprite = new jaws.Sprite({
-              image : sprite.chop(guiSpriteSheet.image, 0, 32 * 10, 352, 32 * 2),
+        if (!gui.menu_sprite)
+          gui.menu_sprite = new jaws.Sprite({
+              image : sprite.chop(gui.sprite_sheet.image, 0, 32 * 10, 352, 32 * 2),
               x : (jaws.width / 2) | 0,
               y : (jaws.height / 2 + 40) | 0,
               anchor : "center_center",
               flipped : false
             });
         
-        if (!levelcompleteSprite)
-          levelcompleteSprite = new jaws.Sprite({
-              image : sprite.chop(guiSpriteSheet.image, 0, 0, 352, 128),
+        if (!gui.level_complete_sprite)
+          gui.level_complete_sprite = new jaws.Sprite({
+              image : sprite.chop(gui.sprite_sheet.image, 0, 0, 352, 128),
               x : (jaws.width / 2) | 0,
               y : (jaws.height / 2) | 0,
               anchor : "center_center",
               flipped : false
             });
         
-        if (!gameoverSprite)
-          gameoverSprite = new jaws.Sprite({
-              image : sprite.chop(guiSpriteSheet.image, 0, 128, 352, 64),
+        if (!gui.gameover_sprite)
+          gui.gameover_sprite = new jaws.Sprite({
+              image : sprite.chop(gui.sprite_sheet.image, 0, 128, 352, 64),
               x : (jaws.width / 2) | 0,
               y : ((jaws.height / 2) | 0) - 42,
               anchor : "center_center",
               flipped : false
             });
         
-        if (!youloseSprite)
-          youloseSprite = new jaws.Sprite({
-              image : sprite.chop(guiSpriteSheet.image, 0, 192, 352, 64),
+        if (!gui.youlose_sprite)
+          gui.youlose_sprite = new jaws.Sprite({
+              image : sprite.chop(gui.sprite_sheet.image, 0, 192, 352, 64),
               x : (jaws.width / 2) | 0,
               y : ((jaws.height / 2) | 0) + 42,
               anchor : "center_center",
               flipped : false
             });
 
-        if (!beatTheGameSprite)
-          beatTheGameSprite = new jaws.Sprite({
-              image : sprite.chop(guiSpriteSheet.image, 0, 256, 352, 64),
+        if (!gui.game_won_sprite)
+          gui.game_won_sprite = new jaws.Sprite({
+              image : sprite.chop(gui.sprite_sheet.image, 0, 256, 352, 64),
               x : (jaws.width / 2) | 0,
               y : ((jaws.height / 2) | 0) + 42,
               anchor : "center_center",
@@ -241,7 +241,7 @@ angular.module('game.states.title', [
             });
 
         // move all gui elements around in a window size independent way (responsive liquid layout)
-        if (gui_enabled) {
+        if (gui.gui_enabled) {
           gui.liquidLayoutGUI();
         }
 
@@ -271,10 +271,10 @@ angular.module('game.states.title', [
       this.update = function () {
 
         // title screen zooms in - this could be a nice tween fixme todo
-        splashSpriteZoom += 0.01;
-        if (splashSpriteZoom > 1)
-          splashSpriteZoom = 1;
-        splashSprite.scaleTo(splashSpriteZoom);
+        gui.gui.splash_sprite_zoom += 0.01;
+        if (gui.gui.splash_sprite_zoom > 1)
+          gui.gui.splash_sprite_zoom = 1;
+        gui.splash_sprite.scaleTo(gui.gui.splash_sprite_zoom);
 
         if (use_parallax_background_titlescreen) {
           // update parallax background scroll
@@ -283,8 +283,8 @@ angular.module('game.states.title', [
 
         // show which item we have currently selected - about 25 visible at any one time
         // only draws after the title screen is fully zoomed in
-        if (titleframecount % 5 == 0 && splashSpriteZoom > 0.99) {
-          if (menu_item_selected == 0)
+        if (gui.title_frame_count % 5 == 0 && gui.gui.splash_sprite_zoom > 0.99) {
+          if (gui.menu_item_selected == 0)
             particleSystem.start(jaws.width / 2 - 16 - (Math.random() * 272), jaws.height / 2 + 32 + (Math.random() * 80));
           else
             particleSystem.start(jaws.width / 2 + 16 + (Math.random() * 272), jaws.height / 2 + 32 + (Math.random() * 80));
@@ -294,20 +294,20 @@ angular.module('game.states.title', [
           jaws.pressed("right")) {
           if (debugmode)
             log('credits button highlighted');
-          titleframecount = 60; // reset particleSystem.particles immediately
-          menu_item_selected = 1;
+          gui.title_frame_count = 60; // reset particleSystem.particles immediately
+          gui.menu_item_selected = 1;
         }
 
         if (jaws.pressed("up") ||
           jaws.pressed("left")) {
           if (debugmode)
             log('start button highlighted');
-          titleframecount = 60; // reset particleSystem.particles immediately
-          menu_item_selected = 0;
+          gui.title_frame_count = 60; // reset particleSystem.particles immediately
+          gui.menu_item_selected = 0;
         }
 
         // after gameover, debounce since you are holding down a key on prev frame
-        if (noKeysPressedLastFrame) {
+        if (gui.no_keys_pressed_last_frame) {
           if (jaws.pressed("enter") ||
             jaws.pressed("space") ||
             jaws.pressed("left_mouse_button") ||
@@ -317,41 +317,41 @@ angular.module('game.states.title', [
             sfx.play('menuclick'); // wp8
 
             if (debugmode)
-              log('Titlescreen click at ' + jaws.mouse_x + ',' + jaws.mouse_y + ' and CREDITS_BUTTON_X=' + CREDITS_BUTTON_X);
+              log('Titlescreen click at ' + jaws.mouse_x + ',' + jaws.mouse_y + ' and gui.credits_button_x=' + gui.credits_button_x);
 
-            // touch and mouse don't take keyboard menu_item_selected "highlight" into account
+            // touch and mouse don't take keyboard gui.menu_item_selected "highlight" into account
             // touch also never updates jaws.pressed("left_mouse_button")
             var justHidTheCredits = false;
-            if (showing_credits) {
+            if (gui.showing_credits) {
               if (debugmode)
                 log('Titlescreen HIDING CREDITS.');
-              showing_credits = false;
-              menu_item_selected = 0;
+              gui.showing_credits = false;
+              gui.menu_item_selected = 0;
               game_paused = 3; // reset
               justHidTheCredits = true;
               // special message that tells C# whether or not to send back button events to js or handle natively
               console.log('[STOP-SENDING-BACK-BUTTON-EVENTS]');
             } else // normal menu was clicked
             {
-              if (jaws.mouse_x <= CREDITS_BUTTON_X) {
+              if (jaws.mouse_x <= gui.credits_button_x) {
                 if (debugmode)
                   log('Titlescreen PLAY CLICKED!');
-                menu_item_selected = 0;
+                gui.menu_item_selected = 0;
               } else {
                 if (debugmode)
                   log('Titlescreen CREDITS CLICKED!');
-                menu_item_selected = 1;
+                gui.menu_item_selected = 1;
                 // special message that tells C# whether or not to send back button events to js or handle natively
                 console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
               }
             }
 
             if (!justHidTheCredits) {
-              if (menu_item_selected == 1) {
+              if (gui.menu_item_selected == 1) {
                 if (debugmode)
                   log('Titlescreen SHOWING CREDITS!');
-                showing_credits = true;
-                gui.showing_levelselectscreen = false;
+                gui.showing_credits = true;
+                gui.gui.showing_level_select_screen = false;
                 game_paused = 3; // reset
                 // special message that tells C# whether or not to send back button events to js or handle natively
                 console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
@@ -360,8 +360,8 @@ angular.module('game.states.title', [
                 if (debugmode)
                   log('Titlescreen SHOWING MAP!');
                 //Show the map and wait for levelSelectScreen's event.clickMaybe() to start the game
-                showing_credits = false;
-                gui.showing_levelselectscreen = true;
+                gui.showing_credits = false;
+                gui.gui.showing_level_select_screen = true;
                 //startGameNow(); // is this redundant: called by levelSelectClick()
                 // special message that tells C# whether or not to send back button events to js or handle natively
                 console.log('[SEND-BACK-BUTTON-EVENTS-PLEASE]');
@@ -374,15 +374,15 @@ angular.module('game.states.title', [
         if (!(jaws.pressed("enter")) && !(jaws.pressed("space")) && !(jaws.pressed("left_mouse_button")) && (game_paused == 3)) {
           // this "debounces" keypresses so you don't
           // trigger every single frame when holding down a key
-          noKeysPressedLastFrame = true;
+          gui.no_keys_pressed_last_frame = true;
         } else {
-          noKeysPressedLastFrame = false;
+          gui.no_keys_pressed_last_frame = false;
         }
 
         if (particleSystem.particles_enabled)
           updateParticles();
 
-        titleframecount++;
+        gui.title_frame_count++;
 
       }; // title screen update function
 
@@ -398,22 +398,22 @@ angular.module('game.states.title', [
           jaws.context.fillRect(0, 0, jaws.width, jaws.height);
         }
 
-        if (need_to_draw_paused_sprite) {
-          PausedGUI.draw();
+        if (gui.need_to_draw_paused_sprite) {
+          gui.paused_sprite.draw();
         } else {
 
-          if (showing_credits) {
+          if (gui.showing_credits) {
             // just in case a previous level transition set the scale
-            msgboxSprite.scaleTo(1);
-            msgboxSprite.draw();
-            creditsSprite.draw();
-          } else if (gui.showing_levelselectscreen) {
-            levelSelectSprite.draw();
+            gui.msgbox_sprite.scaleTo(1);
+            gui.msgbox_sprite.draw();
+            gui.credits_sprite.draw();
+          } else if (gui.gui.showing_level_select_screen) {
+            gui.level_select_sprite.draw();
           } else {
-            splashSprite.draw();
+            gui.splash_sprite.draw();
             if (particleSystem.particles_enabled)
               particleSystem.particles.draw();
-            //menuSprite.draw();
+            //gui.menu_sprite.draw();
           }
         }
 

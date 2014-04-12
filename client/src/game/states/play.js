@@ -5,7 +5,7 @@ angular.module('game.states.play', [])
    * The in-game (during play) jaws state object.
    * This is the workhorse that handles all gameplay.
    */
-  .factory('PlayState', function ($log) {
+  .factory('PlayState', function ($log, profiler) {
 
     return function PlayState() { // in-game state
 
@@ -22,8 +22,7 @@ angular.module('game.states.play', [])
         // wp8: try to reclaim some RAM that was used during inits/asset downloading
         if (typeof(window.CollectGarbage) == "function") {
           window.CollectGarbage();
-          if (debugmode)
-            log('PlayState.setup just did a CollectGarbage()');
+          $log.debug('PlayState.setup just did a CollectGarbage()');
         }
 
         profiler.start("playstate setup");
@@ -35,13 +34,13 @@ angular.module('game.states.play', [])
         enemyWave.entitynum = 0;
         enemyWave.next_spawntime = 0;
         level.pendingLevelComplete = false;
-        buildPendingPixelX = settings.farAway;
-        buildPendingPixelY = settings.farAway;
-        buildPendingTileX = settings.farAway;
-        buildPendingTileY = settings.farAway;
-        player_Gold = player_gold_startwith;
-        displayedGold = 0; // immediately count up
-        buildMenuOFF();
+        buildMenu.pending_pixelX = settings.farAway;
+        buildMenu.pending_pixelY = settings.farAway;
+        buildMenu.pending_tileX = settings.farAway;
+        buildMenu.pending_tileY = settings.farAway;
+        player.gold = player_gold_startwith;
+        goldGui.displayed_gold = 0; // immediately count up
+        buildMenu.off();
         enemyWave.next_spawntime = timer.currentFrameTimestamp - 1; // NOW! don't wait for intro cinematic to finish: insta
 
         // no leftover particleSystem.particles
@@ -51,8 +50,8 @@ angular.module('game.states.play', [])
         sprite.init();
 
         initLevel(level[level.current_level_number]);
-        if (gui_enabled)
-          sprite.updateAll(waveGui.instance, gameplay.time_remaining); // change from 000 imediately
+        if (gui.gui_enabled)
+          sprite.updateGui(waveGui.instance, gameplay.time_remaining); // change from 000 imediately
 
         // scrolling background images
         if (use_parallax_background) {
@@ -72,16 +71,16 @@ angular.module('game.states.play', [])
         // reset the player score if this is the first level
         // also, start the intro cinematic NPC dialogue
         if (level.current_level_number == starting_level_number) {
-          player_Gold = player_gold_startwith;
+          player.gold = player_gold_startwith;
           player_nextGoldAt = 0; // timestamp when we get another gold - fixme: wait a full second?
           introSceneNumber = 0;
           introCinematic(); // start the NPC dialogue
         }
-        sprite.updateAll(goldGui.instance, player_Gold); // immediate update to proper value in case it changed prev level
+        sprite.updateGui(goldGui.instance, player.gold); // immediate update to proper value in case it changed prev level
 
         player.maxHealth = 15;
         player.health = 15;
-        sprite.updateAll(healthGui.instance, player.health);
+        sprite.updateGui(healthGui.instance, player.health);
 
         // the respawn particle system!
         // if (particleSystem.particles_enabled) particleSystem.start(gameplay.startx, gameplay.starty, 5);
@@ -145,8 +144,8 @@ angular.module('game.states.play', [])
           // removed, since the enemies start spawing right away now
           //if (introSceneNumber > 98) {
           player_nextGoldAt = timer.currentFrameTimestamp + settings.ms_per_gold;
-          player_Gold++;
-          updateGoldGUI();
+          player.gold++;
+          sprite.updateGold();
           //}
           //else {
           //    if (debugmode>2) log('No gold earning during intro');
@@ -195,7 +194,7 @@ angular.module('game.states.play', [])
           //viewport.centerAround(sprite.game_objects.at(0)); // fixme
           // should we follow the first known entity?
 
-          // this works but we want tween to control it with moveCamera(px,py);
+          // this works but we want tween to control it with camera.move(px,py);
           /*
           if (entities) {
           var cameraFollows = entities.at(0);
@@ -212,39 +211,39 @@ angular.module('game.states.play', [])
             parallax.camera_y = viewport.y; // buggy? it works now... but the bg image only tiles horiz...
           }
 
-          if (gui_enabled)
-            updateGoldGUI(); // every frame!? optimize? OK?
+          if (gui.gui_enabled)
+            sprite.updateGold(); // every frame!? optimize? OK?
 
           // update the buildMenu
-          if (buildMenuOverlay1) {
+          if (buildMenu.overlay1) {
             var fundingPercent;
 
-            fundingPercent = player_Gold / settings.buildCost[0];
+            fundingPercent = player.gold / settings.buildCost[0];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
-              buttonHighlight[0].setImage(buttonHighlightImageON);
+              buildMenu.button_highlight[0].setImage(buildMenu.button_highlight_image_on);
             } else {
-              buttonHighlight[0].setImage(buttonHighlightImageOFF);
+              buildMenu.button_highlight[0].setImage(buildMenu.button_highlight_image_off);
             }
-            buildMenuOverlay1.setHeight(buildMenuOverlayHeight - (buildMenuOverlayHeight * fundingPercent));
+            buildMenu.overlay1.setHeight(buildMenu.overlay_height - (buildMenu.overlay_height * fundingPercent));
 
-            fundingPercent = player_Gold / settings.buildCost[1];
+            fundingPercent = player.gold / settings.buildCost[1];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
-              buttonHighlight[1].setImage(buttonHighlightImageON);
+              buildMenu.button_highlight[1].setImage(buildMenu.button_highlight_image_on);
             } else {
-              buttonHighlight[1].setImage(buttonHighlightImageOFF);
+              buildMenu.button_highlight[1].setImage(buildMenu.button_highlight_image_off);
             }
-            buildMenuOverlay2.setHeight(buildMenuOverlayHeight - (buildMenuOverlayHeight * fundingPercent));
+            buildMenu.overlay2.setHeight(buildMenu.overlay_height - (buildMenu.overlay_height * fundingPercent));
 
-            fundingPercent = player_Gold / settings.buildCost[2];
+            fundingPercent = player.gold / settings.buildCost[2];
             if (fundingPercent >= 1) {
               fundingPercent = 1;
-              buttonHighlight[2].setImage(buttonHighlightImageON);
+              buildMenu.button_highlight[2].setImage(buildMenu.button_highlight_image_on);
             } else {
-              buttonHighlight[2].setImage(buttonHighlightImageOFF);
+              buildMenu.button_highlight[2].setImage(buildMenu.button_highlight_image_off);
             }
-            buildMenuOverlay3.setHeight(buildMenuOverlayHeight - (buildMenuOverlayHeight * fundingPercent));
+            buildMenu.overlay3.setHeight(buildMenu.overlay_height - (buildMenu.overlay_height * fundingPercent));
           }
 
           if (particleSystem.particles_enabled) {
@@ -267,7 +266,7 @@ angular.module('game.states.play', [])
       this.draw = function () {
 
         // when pausing, we need to render one frame first
-        if (game_paused && !need_to_draw_paused_sprite) {
+        if (game_paused && !gui.need_to_draw_paused_sprite) {
           return;
         }
 
@@ -296,12 +295,12 @@ angular.module('game.states.play', [])
 
         });
 
-        if (gui_enabled)
+        if (gui.gui_enabled)
           renderGUI();
 
-        if (need_to_draw_paused_sprite) {
-          need_to_draw_paused_sprite = false;
-          PausedGUI.draw();
+        if (gui.need_to_draw_paused_sprite) {
+          gui.need_to_draw_paused_sprite = false;
+          gui.paused_sprite.draw();
         }
 
         // intro cinematic

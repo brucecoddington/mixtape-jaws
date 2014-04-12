@@ -6,7 +6,7 @@ angular.module('game.engine.camera', [])
       // tween me, baby!
       cameraTween: null,
 
-      move: function moveCamera(px, py) {
+      move: function move(px, py) {
         if (!viewport) {
           return;
         }
@@ -31,10 +31,6 @@ angular.module('game.engine.camera', [])
         var gotoX = (px - jaws.width / 2) | 0;
         var gotoY = (py - jaws.height / 2) | 0;
 
-        // instant: works!
-        //viewport.x = gotoX;
-        //viewport.y = gotoY;
-
         var position = {
           x : viewport.x,
           y : viewport.y
@@ -50,18 +46,13 @@ angular.module('game.engine.camera', [])
         camera.cameraTween.easing(tween.Easing.Quadratic.InOut);
 
         // define an anonymous function within it
-        camera.cameraTween.onUpdate(
-          function () {
-          //if (debugmode) log('Tween onUpdate...');
+        camera.cameraTween.onUpdate(function () {
           viewport.x = position.x;
           viewport.y = position.y;
         });
 
-        camera.cameraTween.onComplete(
-          function () {
-          if (debugmode)
-            log('Tween completed!');
-          //nme.tweener.to(newtarget);
+        camera.cameraTween.onComplete(function () {
+          $log.debug('Tween completed!');
         });
 
         camera.cameraTween.start();

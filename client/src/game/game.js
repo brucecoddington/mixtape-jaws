@@ -21,7 +21,7 @@ angular.module('game.container', [
       if (debugmode) {
         log('START GAME NOW!');
       }
-      gui.showing_levelselectscreen = false;
+      gui.gui.showing_level_select_screen = false;
       game_paused = false; // keyboard doesn't reset this
       //sfxstart();
       level.current_level_number = starting_level_number; // start from the first level (or whichever the user selected)
@@ -83,14 +83,14 @@ angular.module('game.container', [
           game_paused = true;
 
         // because main menu is already considered "paused"
-        need_to_draw_paused_sprite = true;
+        gui.need_to_draw_paused_sprite = true;
 
       } else // paused OFF
       {
         if (debugmode)
           log('[UN-PAUSING]');
 
-        need_to_draw_paused_sprite = false;
+        gui.need_to_draw_paused_sprite = false;
 
         if (game_paused != 3)
           game_paused = false;
@@ -273,19 +273,19 @@ angular.module('game.container', [
         gameOver(false); // return to previous menu
       } else // already in the titlescreen game state: check credits or level select screen?
       {
-        if (showing_credits) {
+        if (gui.showing_credits) {
           console.log('BACK BUTTON: leaving credits - returning to the main menu.');
           console.log('[STOP-SENDING-BACK-BUTTON-EVENTS]');
-          showing_credits = false;
-          gui.showing_levelselectscreen = false;
-          menu_item_selected = 0;
+          gui.showing_credits = false;
+          gui.gui.showing_level_select_screen = false;
+          gui.menu_item_selected = 0;
           game_paused = 3; // reset
-        } else if (gui.showing_levelselectscreen) {
+        } else if (gui.gui.showing_level_select_screen) {
           console.log('BACK BUTTON: leaving level select screen - returning to the main menu.');
           console.log('[STOP-SENDING-BACK-BUTTON-EVENTS]');
-          showing_credits = false;
-          gui.showing_levelselectscreen = false;
-          menu_item_selected = 0;
+          gui.showing_credits = false;
+          gui.gui.showing_level_select_screen = false;
+          gui.menu_item_selected = 0;
           game_paused = 3; // reset
         } else {
           console.log('BACK BUTTON: at the main menu: WE SHOULD NEVER GET HERE: QUIT APP PLEASE!');

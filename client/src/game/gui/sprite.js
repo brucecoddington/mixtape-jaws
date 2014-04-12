@@ -1,8 +1,9 @@
 angular.module('game.gui.sprite', [
-  'game.gui.tile'
+  'game.gui.tile',
+  'game.entities.player'
 ])
 
-.factory('sprite', function (tile) {
+.factory('sprite', function (tile, player) {
 
   return {
 
@@ -59,8 +60,10 @@ angular.module('game.gui.sprite', [
      * the jaws.Spritesheet class is insufficient
      */
     chop: function chop(image, x, y, width, height) {
-      if (!image)
+      if (!image) {
         throw "sprite.chop with an undefined image";
+      }
+
       var cut = document.createElement("canvas");
       cut.width = width;
       cut.height = height;
@@ -82,8 +85,7 @@ angular.module('game.gui.sprite', [
 
     lookAt: function lookAt(spr, x, y) {
       if (!spr || isNaN(x) || isNaN(y)) {
-        if (debugmode)
-          log("ERROR: Empty value passed to the lookAt function");
+        $log.debug("ERROR: Empty value passed to the lookAt function");
         return;
       }
 
@@ -108,48 +110,57 @@ angular.module('game.gui.sprite', [
 
     },
 
-      /**
+    /**
      * Changes the sprites used by a SpriteList (score, time, counter, etc) eg. 00000FAR_AWAY9
-     * updateGUIsprites cannot handle negative numbers: only 0..9 in the spritesheet
+     * updateGui cannot handle negative numbers: only 0..9 in the spritesheet
      */
-    updateAll: function updateGUIsprites(gui, num) {
-      if (!gui_enabled)
+    updateGui: function updateGui(guiToUpdate, num) {
+      if (!gui.gui_enabled) {
         return;
+      }
+
       // individual digits
-      //if (debugmode) log('updateGUIsprites: using ' + gui.length + ' digit sprites to display: ' + num);
       var digitcount = 0;
       var digit = 0;
-      var digitsprite = gui.at(digitcount + 1); // +1 because the "label" is the first sprite
+      var digitsprite = guiToUpdate.at(digitcount + 1); // +1 because the "label" is the first sprite
+
       while (digitsprite) {
         digit = Math.floor(num % 10);
-        if (digit < 0)
+
+        if (digit < 0) {
           digit = 0; // eg if num is -1
+        }
+          
         num = Math.floor(num / 10);
-        digitsprite.setImage(fontSpriteSheet.frames[digit]);
+        digitsprite.setImage(gui.font_sheet.frames[digit]);
         digitcount++;
-        digitsprite = gui.at(digitcount + 1);
+        digitsprite = guiToUpdate.at(digitcount + 1);
       }
     },
 
     /**
      * Changes the sprites used by the goldGui.instance,
-     * counting by 1 each call until we reach player_Gold
+     * counting by 1 each call until we reach player.gold
      */
-    updateGold: function updateGoldGUI() {
-      if (displayedGold == player_Gold)
+    updateGold: function updateGold() {
+      if (goldGui.displayed_gold === player.gold) {
         return;
-
-      // don't fall too far behind
-      if (Math.abs(player_Gold - displayedGold) > 200)
-        displayedGold = player_Gold;
-      else {
-        if (player_Gold > displayedGold)
-          displayedGold++;
-        else
-          displayedGold--;
       }
 
-      updateGUIsprites(goldGui.instance, displayedGold);
+      // don't fall too far behind
+      if (Math.abs(player.gold - goldGui.displayed_gold) > 200) {
+        goldGui.displayed_gold = player.gold;
+
+      } else {
+        
+        if (player.gold > goldGui.displayed_gold) {
+          goldGui.displayed_gold++;
+        } else {
+          goldGui.displayed_gold--;
+        }
+      }
+
+      sprite.updateGui(goldGui.instance, goldGui.displayed_gold);
     }
   };
 });

@@ -80,7 +80,7 @@ angular.module('game.engine.level', [
      */
     complete: function levelComplete() {
       $log.debug('Level ' + level.current_level_number + ' complete!');
-      sprite.updateAll(goldGui.instance, player_Gold); // immediate update to proper value
+      sprite.updateGui(goldGui.instance, player.gold); // immediate update to proper value
       level.pendingLevelComplete = false;
       jaws.switchGameState(LevelTransitionScreenState);
     },

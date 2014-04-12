@@ -49,7 +49,7 @@ angular.module('game.states.transitions', [])
       this.update = function () {
 
         // wobble just for fun
-        // msgboxSprite.scaleTo(0.75 + (Math.sin(new Date().valueOf() * 0.001) / (Math.PI * 2)));
+        // gui.msgbox_sprite.scaleTo(0.75 + (Math.sin(new Date().valueOf() * 0.001) / (Math.PI * 2)));
 
         if (particleSystem.particles_enabled)
           updateParticles();
@@ -95,20 +95,20 @@ angular.module('game.states.transitions', [])
 
         if (use_parallax_background)
           titlebackground.draw();
-        msgboxSprite.draw();
+        gui.msgbox_sprite.draw();
         if (transition.mode == transition.gameOver) {
-          gameoverSprite.draw();
-          youloseSprite.draw();
+          gui.gameover_sprite.draw();
+          gui.youlose_sprite.draw();
         } else {
           if (level[level.current_level_number]) // more to come?
           {
             //if (debugmode) log('Next world (level ' + level.current_level_number + ') exists...');
-            levelcompleteSprite.draw();
+            gui.level_complete_sprite.draw();
           } else // game over: final level completed!
           {
             //if (debugmode) log('Next world (level ' + level.current_level_number + ') does not exist. GAME COMPLETED!');
-            gameoverSprite.draw();
-            beatTheGameSprite.draw();
+            gui.gameover_sprite.draw();
+            gui.game_won_sprite.draw();
           }
         }
         if (particleSystem.particles_enabled)

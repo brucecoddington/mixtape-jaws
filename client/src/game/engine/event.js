@@ -37,10 +37,10 @@ angular.module('game.engine.event', [
     onPointerDown: function onPointerDown(evt) {
       $log.debug('onPointerDown ' + evt.clientX + ',' + evt.clientY);
 
-      // used by the level select screen levelSelectSprite
-      if (gui.showing_levelselectscreen) {
+      // used by the level select screen gui.level_select_sprite
+      if (gui.gui.showing_level_select_screen) {
         if (!event.clickMaybe(evt.clientX, evt.clientY)) {
-          $log.debug('gui.showing_levelselectscreen GUI not touched');
+          $log.debug('gui.gui.showing_level_select_screen GUI not touched');
         }
       }
 

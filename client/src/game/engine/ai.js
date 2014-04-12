@@ -20,7 +20,7 @@ angular.module('game.engine.ai', [
       sfx.play('Goal');
 
       player.health--;
-      sprite.updateAll(healthGui.instance, player.health);
+      sprite.updateGui(healthGui.instance, player.health);
       particleSystem.start(nme.x, nme.y, particle.goal);
 
       nme.active = false;

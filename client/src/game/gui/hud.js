@@ -14,9 +14,9 @@ angular.module('game.gui.hud', [])
 
   .factory('goldGui', function () {
     var gold = {
-      instance: {}, // displays player_Gold in the top middle
+      instance: {}, // displays player.gold in the top middle
       label: 'Gold:', // "Gold:"
-      displayedGold: 0, // we animate the score GUI just for fun
+      displayed_gold: 0, // we animate the score GUI just for fun
       x: 16,
       y: waveGui.y + 32 + 8,
       spacing: 12,
@@ -40,7 +40,7 @@ angular.module('game.gui.hud', [])
   })
 
   // HUD (heads-up-display) of changing stats: Wave, Health and Gold
-  .factory('hud', function ($document) {
+  .factory('hud', function ($document, profiler) {
 
     var hud = {
 
@@ -49,7 +49,7 @@ angular.module('game.gui.hud', [])
        */
       render: function renderGUI() {
 
-        if (!gui_enabled) {
+        if (!gui.gui_enabled) {
           return;
         }
 
@@ -68,25 +68,27 @@ angular.module('game.gui.hud', [])
         }
 
         // update FPS gui once a second max so it doesn't affect fps too much
-        if (hud.info_tag.length > 0) {
-          fps_framecount++;
-          if (timer.currentFrameTimestamp > (fps_prev_timestamp + 1000)) {
-            fps_prev_timestamp = timer.currentFrameTimestamp;
-            fps_prev_framecount = fps_framecount;
-            fps_framecount = 0;
+        if (hud.info_tag && hud.info_tag.length > 0) {
+          timer.fps_framecount++;
+
+          if (timer.currentFrameTimestamp > (timer.fps_prev_timestamp + 1000)) {
+            timer.fps_prev_timestamp = timer.currentFrameTimestamp;
+            timer.fps_prev_framecount = timer.fps_framecount;
+            timer.fps_framecount = 0;
 
             var profilestring = '';
             if (debugmode) {
-              for (var pname in profile_length) {
-                profilestring += '<br>' + pname + ':' + profile_length[pname] + 'ms (max:' + profile_maxlen[pname] + 'ms)';
+              for (var pname in profiler.length) {
+                profilestring += '<br>' + pname + ':' + profiler.length[pname] + 'ms (max:' + profile_maxlen[pname] + 'ms)';
               }
               profilestring += '<br>simstepsrequired: ' + simstepsrequired;
               profilestring += '<br>unsimulatedms: ' + unsimulatedms;
               profilestring += '<br>currentframems: ' + currentframems;
               profilestring += '<br>last touched sprite: ' + debugTouchInfo;
-              info_tag.innerHTML = "FPS: " + fps_prev_framecount + profilestring +
+              info_tag.innerHTML = "FPS: " + timer.fps_prev_framecount + profilestring +
                 '<br>timer.currentFrameTimestamp: ' + timer.currentFrameTimestamp;
             }
+
           } else {
             hud.info_tag = angular.element("#info");
           }
