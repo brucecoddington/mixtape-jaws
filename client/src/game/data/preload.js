@@ -1,8 +1,8 @@
-angular.module('data.preload', [])
+angular.module('game.data.preload', [])
   .factory('preload', function () {
     
     return {
-      all_game_assets_go_here: "assets/map/",
+      all_game_assets_go_here: "assets/img/",
       all_game_assets: [
         "map/titlescreen.png",
         "gui/gui.png",
@@ -17,7 +17,7 @@ angular.module('data.preload', [])
         "sprite/particles.png",
         "map/msgbox.png",
         "map/entities.png",
-        "buildmenu.png",
+        "map/buildmenu.png",
         "sprite/unit1.png",
         "sprite/unit2.png",
         "sprite/unit3.png",

@@ -1,16 +1,16 @@
 angular.module('game.engine.ai', [
-  'game.engine.sfx',
   'game.entities.player',
-  'game.ui.sprite',
+  'game.entities.enemy',
+  'game.engine.sfx',
   'game.engine.particles',
   'game.engine.spawn',
   'game.engine.level',
-  'game.entities.enemy',
   'game.engine.timer',
+  'game.ui.sprite',
   'game.ui.tile'
 ])
 
-.factory('entityAI', function (sfx, player, sprite, particleSystem, spawner, level, walker, timer, tile) {
+.factory('entityAI', function ($injector, sfx, player, sprite, particleSystem, spawner, level, walker, timer, tile) {
 
   var ai = {
 
@@ -20,7 +20,7 @@ angular.module('game.engine.ai', [
       sfx.play('Goal');
 
       player.health--;
-      sprite.updateGui(healthGui.instance, player.health);
+      gui.updateGui(healthGui.instance, player.health);
       particleSystem.start(nme.x, nme.y, particle.goal);
 
       nme.active = false;
@@ -166,7 +166,7 @@ angular.module('game.engine.ai', [
                 );
 
                 // we have perfect aim
-                game.takeDamage(nextone, nme);
+                $injector.get('game').takeDamage(nextone, nme);
                 break;
               }
             }

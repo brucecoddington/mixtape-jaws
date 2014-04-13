@@ -1,4 +1,4 @@
-angular.module('game.engine.profiler', [])
+angular.module('game.system.profiler', [])
   
 .factory('profiler', function ($log) {
 

@@ -1,6 +1,6 @@
 angular.module('game.ui.viewport', [])
 
-.factory('viewport', function ($window) {
+.factory('viewport', function () {
 
   var viewport = {
     max_x: 10000, // these defaults are overwritten...

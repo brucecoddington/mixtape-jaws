@@ -1,10 +1,16 @@
-angular.module('game.states.transitions', [])
+angular.module('game.states.transitions', [
+  'game.engine.transition',
+  'game.engine.timer',
+  'game.engine.particles',
+  'game.ui.background',
+  'game.ui.gui'
+])
   
 /**
  * A jaws state object for the display in between levels (and game over) screen.
  * Used to display messages like "game over" or "congratulations"
  */
-.factory('levelTransistionState', function () {
+.factory('levelTransistionState', function ($injector, transition, timer, particleSystem, background, gui) {
 
   var levelTransition = {
     
@@ -55,7 +61,7 @@ angular.module('game.states.transitions', [])
 
         if (transition.mode === transition.gameOver) {
           $log.debug('transitioning from game over to titlescreen');
-          game.gameOver(false);
+          $injector.get('game').gameOver(false);
 
         } else {
           
@@ -65,7 +71,7 @@ angular.module('game.states.transitions', [])
           
           } else {
             $log.debug('no more level data: the user BEAT the game!');
-            game.gameOver(true);
+            $injector.get('game').gameOver(true);
           }
         }
       }
@@ -88,6 +94,7 @@ angular.module('game.states.transitions', [])
 
         if (level[level.current_level_number]) { // more to come?
           gui.level_complete_sprite.draw();
+
         } else { // game over: final level completed!
           gui.gameover_sprite.draw();
           gui.game_won_sprite.draw();

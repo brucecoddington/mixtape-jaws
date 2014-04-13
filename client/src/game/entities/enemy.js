@@ -1,9 +1,16 @@
 angular.module('game.entities.enemy', [
+  'game.data.ui.tile',
   'game.engine.particles',
-  'game.engine.spawn'
+  'game.engine.pathfinder',
+  'game.engine.level',
+  'game.engine.timer',
+  'game.ui.gui',
+  'game.ui.hud',
+  'game.ui.tile',
+  'game.entities.config'
 ])
 
-.factory('enemyWave', function ($log, particleSystem, spawner, timer, level) {
+.factory('enemyWave', function ($injector, $log, particle, particleSystem, timer, level, gui, waveGui, pathfinder, tileData, team) {
   // Game data for enemy waves
   
   var enemyWave = {
@@ -54,7 +61,7 @@ angular.module('game.entities.enemy', [
     /**
     * returns the next new entity in the waves of enemies for each level
     */
-    waveSpawnNextEntity: function waveSpawnNextEntity() {
+    spawn: function spawn() {
 
       // avoid edge case race condition: ensure the game's up and running
       if (!timer.current_frame_timestamp) {
@@ -79,7 +86,7 @@ angular.module('game.entities.enemy', [
       if (enemyWave.entitynum === 0) // brand new wave just started
       {
         enemyWave.max = enemyWave.wave[level.current_level_number].length;
-        sprite.updateGui(waveGui.instance, ((enemyWave.current + 1) * 10) + enemyWave.max); // for "3 of 5" we send 35
+        gui.updateGui(waveGui.instance, ((enemyWave.current + 1) * 10) + enemyWave.max); // for "3 of 5" we send 35
         $log.debug('NEW WAVE STARTING: ' + (enemyWave.current + 1) + ' of ' + enemyWave.max);
       }
 
@@ -98,10 +105,10 @@ angular.module('game.entities.enemy', [
       if (nextone > 0) {
         // this sound overlaps with too much at the start: removed wp8
         // sfx.play('spawn');
-        var birthX = pathfinder.spawnX * tile.size + tile.sizeDiv2; // + wobbleAI();
-        var birthY = pathfinder.spawnY * tile.size + tile.sizeDiv2; // + wobbleAI();
+        var birthX = pathfinder.spawnX * tileData.size + tileData.sizeDiv2; // + wobbleAI();
+        var birthY = pathfinder.spawnY * tileData.size + tileData.sizeDiv2; // + wobbleAI();
         particleSystem.start(birthX, birthY, particle.spawn);
-        spawner.spawn(birthX, birthY, nextone, team.bad);
+        $injector.get('spawner').spawn(birthX, birthY, nextone, team.bad);
       }
 
       enemyWave.entitynum++;

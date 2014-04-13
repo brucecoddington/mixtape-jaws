@@ -1,14 +1,19 @@
-// Game namespace
 angular.module('game.container', [
 	'game.controllers',
-  'game.data',
-  'game.engine',
-  'game.entities',
-  'game.ui',
-  'game.states'
+  'game.system.profiler',
+  'game.data.levels',
+  'game.data.preload',
+  'game.engine.level',
+  'game.engine.timer',
+  'game.engine.particles',
+  'game.engine.sfx',
+  'game.engine.config',
+  'game.ui.gui',
+  'game.states.title',
+  'game.states.play'
 ])
 
-.factory('game', function ($log, level0, level1, level2, level3, gui, timer, level, particles, sfx) {
+.factory('game', function ($log, level0, level1, level2, level3, gui, timer, level, particleSystem, sfx, sound, settings, profiler, preload, titleState, playState, handlers) {
 
   var debugTouchInfo = settings.farAway; // what spritemap tile # did we last touch?
 
@@ -20,40 +25,11 @@ angular.module('game.container', [
     start: function start() {
       $log.debug('START GAME NOW!');
       
-      gui.gui.showing_level_select_screen = false;
+      gui.showing_level_select_screen = false;
       timer.game_paused = false; // keyboard doesn't reset this
-      //sfxstart();
       level.current_level_number = level.starting_level_number; // start from the first level (or whichever the user selected)
-      particles.clear();
+      particleSystem.clear();
       jaws.switchGameState(playState); // Start game!
-    },
-
-    /**
-     * Click/touch event that fires when the user selects a level from the menu
-     */
-    levelSelectClick: function levelSelectClick(px, py) {
-      $log.debug('levelSelectClick' + px + ',' + py);
-      sfx.play('mapclick');
-
-      // the map is split into quadrants - which island did we click?
-      if ((px < jaws.width / 2) && (py < jaws.height / 2)) {
-        $log.debug('Selected LEVEL 0');
-        level.starting_level_number = 0;
-      
-      } else if ((px >= jaws.width / 2) && (py < jaws.height / 2)) {
-        $log.debug('Selected LEVEL 1');
-        level.starting_level_number = 1;
-      
-      } else if ((px < jaws.width / 2) && (py >= jaws.height / 2)) {
-        $log.debug('Selected LEVEL 2');
-        level.starting_level_number = 2;
-      
-      } else if ((px >= jaws.width / 2) && (py >= jaws.height / 2)) {
-        $log.debug('Selected LEVEL 3');
-        level.starting_level_number = 3;
-      }
-
-      game.start();
     },
 
     /**
@@ -67,7 +43,7 @@ angular.module('game.container', [
         $log.debug('[PAUSING]');
 
         // we might be in the main menu (timer.game_paused==3)
-        if (timer.game_paused != 3) {
+        if (timer.game_paused !== 3) {
           timer.game_paused = true;
         }
 
@@ -79,7 +55,7 @@ angular.module('game.container', [
 
         gui.need_to_draw_paused_sprite = false;
 
-        if (timer.game_paused != 3) {
+        if (timer.game_paused !== 3) {
           timer.game_paused = false;
         }
       }
@@ -104,7 +80,7 @@ angular.module('game.container', [
      */
     // FIXME: this is called on ANY click anytime - spammy
     unPause: function unPause(e) {
-      if (timer.game_paused == 3) {
+      if (timer.game_paused === 3) {
         timer.game_paused = false;
         $log.debug('Unpausing the titlescreen = start the game!');
       }
@@ -183,20 +159,21 @@ angular.module('game.container', [
       profiler.end('DRAW EVERYTHING');
 
       // make sure the game is liquid layout resolution-independent (RESPONSIVE)
-      window.addEventListener("resize", onResize, false);
+      window.addEventListener("resize", game.onResize, false);
+
+      // register click handlers
+      handlers.initMSTouchEvents();
 
       // also load all the sounds if required
-      if (!mute) {
-        soundInit();
+      if (!sound.mute) {
+        sound.init();
       }
         
       // enumerate any level data included in other <script> tags
-      var levelnext = 0;
-      while (window['level' + levelnext]) {
-        level.data.push(window['level' + levelnext]);
-        levelnext++;
-      }
-      $log.debug('Max level number: ' + (levelnext - 1));
+      level.data.push(level0);
+      level.data.push(level1);
+      level.data.push(level2);
+      level.data.push(level3);
 
       // start downloading all the art using a preloader progress screen
       jaws.assets.root = preload.all_game_assets_go_here;
@@ -215,12 +192,12 @@ angular.module('game.container', [
       } else { // already in the titlescreen game state: check credits or level select screen?
         if (gui.showing_credits) {
           gui.showing_credits = false;
-          gui.gui.showing_level_select_screen = false;
+          gui.showing_level_select_screen = false;
           gui.menu_item_selected = 0;
           timer.game_paused = 3; // reset
-        } else if (gui.gui.showing_level_select_screen) {
+        } else if (gui.showing_level_select_screen) {
           gui.showing_credits = false;
-          gui.gui.showing_level_select_screen = false;
+          gui.showing_level_select_screen = false;
           gui.menu_item_selected = 0;
           timer.game_paused = 3; // reset
         }
@@ -234,11 +211,11 @@ angular.module('game.container', [
      */
     onResize: function onResize(e) {
       $log.debug('onResize!');
-      $log.debug('window size is now ' + $window.innerWidth + 'x' + $window.innerHeight);
+      $log.debug('window size is now ' + window.innerWidth + 'x' + window.innerHeight);
 
       // for example, on a 1366x768 tablet, swiped to the side it is 320x768
-      jaws.canvas.width = $window.innerWidth;
-      jaws.canvas.height = $window.innerHeight;
+      jaws.canvas.width = window.innerWidth;
+      jaws.canvas.height = window.innerHeight;
       jaws.width = jaws.canvas.width;
       jaws.height = jaws.canvas.height;
 
@@ -248,12 +225,12 @@ angular.module('game.container', [
       }
 
       // move the gui elements around
-      gui.liquidLayoutGUI();
+      gui.liquidLayout();
 
       // wait for the user to be ready to play
       // fixme todo - in BROWSER this can make unpausing a problem! FIXME TODO
       // only for snapped view and other small displays
-      game.pause($window.innerWidth() < 321);
+      game.pause(window.innerWidth() < 321);
     }
   };
 

@@ -1,11 +1,11 @@
 angular.module('game.ui.build', [
-
+  'game.engine.config'
 ])
 
-.factory('buildMenu', function (settings) {
+.factory('buildMenu', function ($log, settings) {
   var offscreen = settings.farAway;
 
-  return {
+  var buildMenu = {
     // The build menu
     // the ring build menu overlay only appears over buildable land we click
     active: false,
@@ -68,4 +68,6 @@ angular.module('game.ui.build', [
       buildMenu.pending_tileY = offscreen;
     }
   };
+
+  return buildMenu;
 });

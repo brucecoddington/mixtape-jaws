@@ -1,4 +1,8 @@
-angular.module('game.engine.particles', [])
+angular.module('game.engine.particles', [
+  'game.system.profiler',
+  'game.engine.config',
+  'game.ui.sprite'
+])
 
 .factory('particle', function () {
 
@@ -21,7 +25,7 @@ angular.module('game.engine.particles', [])
   
 })
 
-.factory('particleSystem', function ($log, profiler, particle) {
+.factory('particleSystem', function ($log, profiler, particle, sprite, settings) {
 
   var particleSystem = {
 
@@ -38,7 +42,7 @@ angular.module('game.engine.particles', [])
      * spawns a spritesheet-based particle animation at these coordinates
      * implements a reuse POOL and only makes new objects when required
      */
-    start: function startParticleSystem(x, y, particleType, destX, destY) {
+    start: function start(x, y, particleType, destX, destY) {
 
       if (!particleSystem.particles_enabled) {
         return;
@@ -138,7 +142,7 @@ angular.module('game.engine.particles', [])
     },
 
     clear: function clear() {
-      $log.debug('particles.clear');
+      $log.debug('particleSystem.clear');
 
       angular.forEach(particleSystem.particles, function (p) {
         p.x = p.y = settings.farAway; // throw offscreen

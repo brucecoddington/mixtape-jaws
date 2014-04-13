@@ -1,4 +1,6 @@
-angular.module('game.entities.weapon', [])
+angular.module('game.entities.weapon', [
+  'game.engine.particles'
+])
   
   .value('weaponType', {
     // maps to particle animation number (5=arrows, 6=flame, 7=energy)
@@ -13,7 +15,7 @@ angular.module('game.entities.weapon', [])
     slow: 3
   })
 
-  .factory('Weapon', function (weaponType, damageType) {
+  .factory('Weapon', function (weaponType, damageType, particle) {
   
     return function Weapon(type) {
       this.self = this;

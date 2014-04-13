@@ -1,14 +1,17 @@
-angular.module('game.engine.event', [
+angular.module('game.engine.handlers', [
+  'game.data.ui.tile',
+  'game.engine.handlers',
   'game.ui.viewport',
-  'game.ui.sprite'
+  'game.ui.sprite',
+  'game.ui.tile'
 ])
   
-.factory('event', function ($log, $document, $window, viewport, sprite, gui) {
+.factory('handlers', function ($log, viewport, sprite, gui, timer, tile, tileData) {
 
-  var event = {
+  var handlers = {
 
     clickMaybe: function clickMaybe(px, py) {
-      $log.debug('event.clickMaybe ' + px + ',' + py);
+      $log.debug('handlers.clickMaybe ' + px + ',' + py);
 
       var weClickedSomething = false;
       // loop through any sprites in this list
@@ -38,9 +41,9 @@ angular.module('game.engine.event', [
       $log.debug('onPointerDown ' + evt.clientX + ',' + evt.clientY);
 
       // used by the level select screen gui.level_select_sprite
-      if (gui.gui.showing_level_select_screen) {
-        if (!event.clickMaybe(evt.clientX, evt.clientY)) {
-          $log.debug('gui.gui.showing_level_select_screen GUI not touched');
+      if (gui.showing_level_select_screen) {
+        if (!handlers.clickMaybe(evt.clientX, evt.clientY)) {
+          $log.debug('gui.showing_level_select_screen GUI not touched');
         }
       }
 
@@ -52,11 +55,11 @@ angular.module('game.engine.event', [
 
       var px = evt.clientX + viewport.instance.x;
       var py = evt.clientY + viewport.instance.y;
-      var tx = Math.floor(px / tile.size);
-      var ty = Math.floor(py / tile.size);
+      var tx = Math.floor(px / tileData.size);
+      var ty = Math.floor(py / tileData.size);
 
-      if (!event.clickMaybe(px, py)) {
-        clickTile(tx, ty);
+      if (!handlers.clickMaybe(px, py)) {
+        tile.click(tx, ty);
       }
     },
 
@@ -68,7 +71,7 @@ angular.module('game.engine.event', [
     initMSTouchEvents: function initMSTouchEvents() {
 
       // no ipad drag
-      $document.addEventListener('touchmove', function (e) {
+      document.addEventListener('touchmove', function (e) {
         e.preventDefault();
       }, false);
 
@@ -76,31 +79,31 @@ angular.module('game.engine.event', [
         throw "We tried to add a point event listener before the game canvas was created.";
       }
       
-      jaws.canvas.addEventListener("PointerDown", event.onPointerDown, false);
+      jaws.canvas.addEventListener("PointerDown", handlers.onPointerDown, false);
       // in some browsers, the above does nothing: also listen for regular events
-      jaws.canvas.addEventListener("mousedown", event.onPointerDown, false);
+      jaws.canvas.addEventListener("mousedown", handlers.onPointerDown, false);
       // and the MS specific version, too
-      jaws.canvas.addEventListener("MSPointerDown", event.onPointerDown, false);
+      jaws.canvas.addEventListener("MSPointerDown", handlers.onPointerDown, false);
 
-      if ($window.navigator.msPointerEnabled) {
+      if (window.navigator.msPointerEnabled) {
         $log.debug('MS pointer events are enabled.');
-        if ($window.navigator.msMaxTouchPoints) {
-          $log.debug('MS touches (x' + $window.navigator.msMaxTouchPoints + ' points max) are available.');
+        if (window.navigator.msMaxTouchPoints) {
+          $log.debug('MS touches (x' + window.navigator.msMaxTouchPoints + ' points max) are available.');
         }
       }
 
       // dont't let any mouse/touch select things: this is a game
-      $document.addEventListener("selectstart", function (e) {
+      document.addEventListener("selectstart", function (e) {
         e.preventDefault();
       }, false);
 
       // dont't let touch-and-hold (or right click) create a context menu
-      $document.addEventListener("contextmenu", function (e) {
+      document.addEventListener("contextmenu", function (e) {
         e.preventDefault();
       }, false);
       
       // don't show the hint visual for context menu either
-      $document.addEventListener("MSHoldVisual", function (e) {
+      document.addEventListener("MSHoldVisual", function (e) {
         e.preventDefault();
       }, false);
 
@@ -108,5 +111,5 @@ angular.module('game.engine.event', [
     }
   };
 
-  return event;
+  return handlers;
 });

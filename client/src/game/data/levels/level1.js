@@ -1,4 +1,4 @@
-angular.module('data.levels.level1', [])
+angular.module('game.data.levels.level1', [])
   .value('level1', {
     "height":16,
     "layers":[

@@ -1,12 +1,14 @@
 angular.module('game.engine.level', [
-  'game.engine.profiler',
-  'game.states.transitions',
-  'game.ui.sprite',
+  'game.system.profiler',
   'game.engine.pathfinder',
-  'game.ui.viewport'
+  'game.ui.sprite',
+  'game.ui.viewport',
+  'game.entities.config'
 ])
 
-.factory('level', function ($log, profiler, levelTransistionState, pathfinder, sprite, gameplay, viewport, settings, goldGui, player, transition, enemyWave) {
+.factory('level', function ($injector, $log, profiler, pathfinder, sprite, gameplay, viewport, settings, goldGui, player, transition, team) {
+
+  var startingLevelNumber = 0;
 
   var level = {
 
@@ -15,8 +17,8 @@ angular.module('game.engine.level', [
 
     // levels
     data: [], // an array of json level data objects
-    starting_level_number: 0, // should be zero except when testing
-    current_level_number: level.level.starting_level_number, // which one are we playing?
+    starting_level_number: startingLevelNumber, // should be zero except when testing
+    current_level_number: startingLevelNumber, // which one are we playing?
     pending_level_complete: false, // do we need to change levels next frame?
 
    /**
@@ -27,12 +29,12 @@ angular.module('game.engine.level', [
       $log.debug('level.init...');
       
       if (!leveldata) {
-        $log.debug('ERROR: Missing level data!');
+        $log.error('ERROR: Missing level data!');
         return;
       }
 
       if (!leveldata.properties) {
-        $log.debug('ERROR: Missing level.properties!');
+        $log.error('ERROR: Missing level.properties!');
         return;
       }
 
@@ -49,7 +51,7 @@ angular.module('game.engine.level', [
         
       // the pre-rendered map terrain eg level0.png level1.png level2.png etc
       level.terrainSprite = new jaws.Sprite({
-        image : jaws.assets.get("level" + (level.current_level_number) + ".png"),
+        image : jaws.assets.get("map/level" + (level.current_level_number) + ".png"),
         x : 0,
         y : 0
       });
@@ -73,7 +75,7 @@ angular.module('game.engine.level', [
       viewport.max_y = (leveldata.height + 2) * leveldata.tileheight; // extend past the level data: fell_too_far + 1;
 
       $log.debug('level.init complete.');
-      $log.debug('Total tiles in the world: ' + world_complexity);
+      $log.debug('Total tiles in the world: ' + level.world_complexity);
 
       profiler.end('level.init');
     },
@@ -84,9 +86,9 @@ angular.module('game.engine.level', [
      */
     complete: function complete() {
       $log.debug('Level ' + level.current_level_number + ' complete!');
-      sprite.updateGui(goldGui.instance, player.gold); // immediate update to proper value
+      gui.updateGui(goldGui.instance, player.gold); // immediate update to proper value
       level.pending_level_complete = false;
-      jaws.switchGameState(levelTransistionState);
+      jaws.switchGameState($injector.get('levelTransistionState'));
     },
 
     // this is called when enemies reach their destination and damage the castle
@@ -101,7 +103,7 @@ angular.module('game.engine.level', [
       if (!sprite.teams[team.bad].length) {
         $log.debug('The badguy team is empty!');
         
-        if (enemyWave.none_left) {
+        if ($injector.get('enemyWave').none_left) {
           $log.debug('And there are no pending waves! LEVEL COMPLETE SUCCESS!');
           transition.mode = transition.level.complete;
           level.pending_level_complete = true; // handle edge case: we hit >1 in the same frame

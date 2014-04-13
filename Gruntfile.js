@@ -8,6 +8,7 @@ module.exports = function (grunt) {
 
     // Gaming Libs
     'jawsjs/jaws.js',
+    'jawsjs/src/extras/sprite_list.js',
     'howlerjs/howler.js',
     'tweenjs/build/tween.min.js',
     '../../../node_modules/easystarjs/bin/easystar-0.1.6.js', // <- blech

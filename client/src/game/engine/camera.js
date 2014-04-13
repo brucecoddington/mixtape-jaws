@@ -2,7 +2,7 @@ angular.module('game.engine.camera', [
   'game.ui.viewport'
 ])
   
-.factory('camera', function (viewport) {
+.factory('camera', function ($log, viewport) {
 
   var camera = {
     // tween me, baby!

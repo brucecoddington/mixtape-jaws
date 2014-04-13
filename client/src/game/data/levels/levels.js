@@ -1,6 +1,6 @@
-angular.module('data.levels', [
-  'data.levels.level0',
-  'data.levels.level1',
-  'data.levels.level2',
-  'data.levels.level3'
+angular.module('game.data.levels', [
+  'game.data.levels.level0',
+  'game.data.levels.level1',
+  'game.data.levels.level2',
+  'game.data.levels.level3'
 ]);

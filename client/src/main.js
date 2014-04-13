@@ -1,10 +1,20 @@
+var tween = window.TWEEN; // handy for animation interpolation
+var jaws = window.jaws; // the jawsjs canvas api
+var Howl = window.Howl; // a cross-browser sound api
+
 angular.module('main', [
   'templates-main',
-  'game.container'
+  'game.container',
+  'game.data',
+  'game.engine',
+  'game.entities',
+  'game.ui',
+  'game.states',
+  'game.system'
 ])
 
 .config(function ($logProvider) {
-  $logProvider.debugEnabled = true;
+  $logProvider.debugEnabled = false;
 })
 
 .run(function ($log, $rootScope, game) {

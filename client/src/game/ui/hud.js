@@ -1,8 +1,6 @@
 angular.module('game.ui.hud', [])
   .factory('waveGui', function () {
     var wave = {
-      instance: {}, // displays game time on the top left
-      label: 'Wave:',
       x: 16,
       y: 16,
       spacing: 32, //12, // larger to make room for the " of "
@@ -14,8 +12,6 @@ angular.module('game.ui.hud', [])
 
   .factory('goldGui', function (waveGui) {
     var gold = {
-      instance: {}, // displays player.gold in the top middle
-      label: 'Gold:', // "Gold:"
       displayed_gold: 0, // we animate the score GUI just for fun
       x: 16,
       y: waveGui.y + 32 + 8,
@@ -28,8 +24,6 @@ angular.module('game.ui.hud', [])
 
   .factory('healthGui', function (goldGui) {
     var health = {
-      instance: {}, // displays number of pickups left on the top right
-      label: 'Health:', // "Health:"
       x: 16,
       y: goldGui.y + 32 + 8,
       spacing: 12,
@@ -40,20 +34,20 @@ angular.module('game.ui.hud', [])
   })
 
   // HUD (heads-up-display) of changing stats: Wave, Health and Gold
-  .factory('hud', function ($document, $logProvider, profiler, gui, goldGui, waveGui, healthGui, timer) {
+  .factory('hud', function ($document, $log, profiler, gui, goldGui, waveGui, healthGui, timer) {
 
     var hud = {
 
       /**
        * draws the in-game HUD (head-up-display) GUI (score, etc.)
        */
-      render: function renderGUI() {
+      render: function render() {
 
         if (!gui.gui_enabled) {
           return;
         }
 
-        profiler.start('renderGUI');
+        profiler.start('hud.render');
 
         if (goldGui.instance) {
           goldGui.instance.draw();
@@ -77,7 +71,7 @@ angular.module('game.ui.hud', [])
             timer.fps_framecount = 0;
 
             var profilestring = '';
-            if ($logProvider.debugEnabled) {
+            if ($log.debugEnabled) {
               for (var pname in profiler.length) {
                 profilestring += '<br>' + pname + ':' + profiler.length[pname] + 'ms (max:' + profile_maxlen[pname] + 'ms)';
               }
@@ -94,7 +88,7 @@ angular.module('game.ui.hud', [])
           }
         }
 
-        profiler.end('renderGUI');
+        profiler.end('hud.render');
       }
     };
 

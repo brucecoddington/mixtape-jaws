@@ -1,12 +1,11 @@
 angular.module('game.ui.sprite', [
-  'game.ui.tile',
-  'game.entities.player',
-  'game.ui.hud'
+  'game.data.ui.tile',
+  'game.entities.config'
 ])
 
-.factory('sprite', function (tile, player, goldGui) {
+.factory('sprite', function (tileData, team) {
 
-  return {
+  var sprite = {
 
     game_objects: undefined, // a spritelist of dummy objects - just rendered sprites with no AI
     button_sprites: undefined, // a spritelist of sprites that you can click - each has a .action() callback - see event.clickMaybe()
@@ -34,7 +33,7 @@ angular.module('game.ui.sprite', [
 
           sprite.sprite_sheet = new jaws.SpriteSheet({
             image : "tiles.png",
-            frame_size : [tile.size, tile.size],
+            frame_size : [tileData.size, tileData.size],
             orientation : 'right'
           });
         }
@@ -46,7 +45,7 @@ angular.module('game.ui.sprite', [
       }
 
       // reset in between play sessions - a list of clickable buttons
-      sprite.button_sprites = new jaws.SpriteList(); /// see event.clickMaybe()
+      sprite.button_sprites = new jaws.SpriteList(); /// see handlers.clickMaybe()
 
       sprite.entities = new jaws.SpriteList();
       sprite.teams[team.bad] = new jaws.SpriteList();
@@ -77,7 +76,7 @@ angular.module('game.ui.sprite', [
      * returns a jaws sprite with pixels extracted
      * from a smaller section of the source image
      */
-    extract: function extractSprite(fromthisimage, x, y, width, height, params) {
+    extract: function extract(fromthisimage, x, y, width, height, params) {
       params = params || {};
       var extracted = sprite.chop(fromthisimage, x, y, width, height);
       params.image = extracted;
@@ -108,60 +107,8 @@ angular.module('game.ui.sprite', [
       //if (spr.angle > 360) spr.angle -= 360;
       //if (spr.angle < 0) spr.angle += 360;
        */
-
-    },
-
-    /**
-     * Changes the sprites used by a SpriteList (score, time, counter, etc) eg. 00000FAR_AWAY9
-     * updateGui cannot handle negative numbers: only 0..9 in the spritesheet
-     */
-    updateGui: function updateGui(guiToUpdate, num) {
-      if (!gui.gui_enabled) {
-        return;
-      }
-
-      // individual digits
-      var digitcount = 0;
-      var digit = 0;
-      var digitsprite = guiToUpdate.at(digitcount + 1); // +1 because the "label" is the first sprite
-
-      while (digitsprite) {
-        digit = Math.floor(num % 10);
-
-        if (digit < 0) {
-          digit = 0; // eg if num is -1
-        }
-          
-        num = Math.floor(num / 10);
-        digitsprite.setImage(gui.font_sheet.frames[digit]);
-        digitcount++;
-        digitsprite = guiToUpdate.at(digitcount + 1);
-      }
-    },
-
-    /**
-     * Changes the sprites used by the goldGui.instance,
-     * counting by 1 each call until we reach player.gold
-     */
-    updateGold: function updateGold() {
-      if (goldGui.displayed_gold === player.gold) {
-        return;
-      }
-
-      // don't fall too far behind
-      if (Math.abs(player.gold - goldGui.displayed_gold) > 200) {
-        goldGui.displayed_gold = player.gold;
-
-      } else {
-        
-        if (player.gold > goldGui.displayed_gold) {
-          goldGui.displayed_gold++;
-        } else {
-          goldGui.displayed_gold--;
-        }
-      }
-
-      sprite.updateGui(goldGui.instance, goldGui.displayed_gold);
     }
   };
+
+  return sprite;
 });

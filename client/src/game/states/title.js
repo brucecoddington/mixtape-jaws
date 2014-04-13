@@ -1,5 +1,13 @@
 angular.module('game.states.title', [
-  'game.ui.sprite'
+  'game.states.intro',
+  'game.ui.sprite',
+  'game.ui.gui',
+  'game.ui.hud',
+  'game.ui.background',
+  'game.engine.timer',
+  'game.engine.particles',
+  'game.engine.sfx',
+  'game.engine.level'
 ])
 
 /**
@@ -8,7 +16,35 @@ angular.module('game.states.title', [
  * by the other states; if you remove the titlescreen,
  * be sure to create these sprites elsewhere.
  */
-.factory('titleState', function (sprite) {
+.factory('titleState', function ($injector, $log, sprite, timer, intro, gui, particleSystem, goldGui, waveGui, healthGui, background, sfx, level) {
+
+  /**
+   * Click/touch event that fires when the user selects a level from the menu
+   */
+  function levelSelectClick(px, py) {
+    $log.debug('levelSelectClick' + px + ',' + py);
+    sfx.play('mapclick');
+
+    // the map is split into quadrants - which island did we click?
+    if ((px < jaws.width / 2) && (py < jaws.height / 2)) {
+      $log.debug('Selected LEVEL 0');
+      level.starting_level_number = 0;
+    
+    } else if ((px >= jaws.width / 2) && (py < jaws.height / 2)) {
+      $log.debug('Selected LEVEL 1');
+      level.starting_level_number = 1;
+    
+    } else if ((px < jaws.width / 2) && (py >= jaws.height / 2)) {
+      $log.debug('Selected LEVEL 2');
+      level.starting_level_number = 2;
+    
+    } else if ((px >= jaws.width / 2) && (py >= jaws.height / 2)) {
+      $log.debug('Selected LEVEL 3');
+      level.starting_level_number = 3;
+    }
+
+    $injector.get('game').start();
+  }
 
   var titleScreen = {
     setup: function setup() {
@@ -30,7 +66,7 @@ angular.module('game.states.title', [
       // the main menu background
       if (!gui.splash_sprite) {
         gui.splash_sprite = new jaws.Sprite({
-          image : "titlescreen.png",
+          image : "map/titlescreen.png",
           x : (jaws.width / 2) | 0,
           y : (jaws.height / 2) | 0,
           anchor : "center_center"
@@ -40,7 +76,7 @@ angular.module('game.states.title', [
       // the level select screen - the second phase of our title screen main menu
       if (!gui.level_select_sprite) {
         gui.level_select_sprite = new jaws.Sprite({
-          image : "level-select-screen.png",
+          image : "map/level-select-screen.png",
           x : (jaws.width / 2) | 0,
           y : (jaws.height / 2) | 0,
           anchor : "center_center"
@@ -50,14 +86,16 @@ angular.module('game.states.title', [
       // so we can trap clicks on the map sprite
       gui.level_select_sprite.action = levelSelectClick;
 
+      sprite.init();
+
       // reset in between play sessions - a list of clickable buttons
-      sprite.button_sprites = new jaws.SpriteList(); /// see event.clickMaybe()
+      sprite.button_sprites = new jaws.SpriteList(); /// see handlers.clickMaybe()
       sprite.button_sprites.push(gui.level_select_sprite);
 
       // the msgbox background - used for pause screen, gameover, level transitions
       if (!gui.msgbox_sprite) {
         gui.msgbox_sprite = new jaws.Sprite({
-          image : "msgbox.png",
+          image : "map/msgbox.png",
           x : (jaws.width / 2) | 0,
           y : (jaws.height / 2) | 0,
           anchor : "center_center"
@@ -70,7 +108,7 @@ angular.module('game.states.title', [
 
       if (!gui.font_sheet) {
         gui.font_sheet = new jaws.SpriteSheet({
-          image : "font.png",
+          image : "font/font.png",
           frame_size : [32, 32],
           orientation : 'down'
         });
@@ -79,13 +117,13 @@ angular.module('game.states.title', [
       // the gui image has all sorts of labels, the credits screen, etc.
       if (!gui.sprite_sheet) {
         gui.sprite_sheet = new jaws.Sprite({
-          image : "gui.png"
+          image : "gui/gui.png"
         });
       }
 
       // the credits screen
       if (!gui.credits_sprite) {
-        gui.credits_sprite = extractSprite(gui.sprite_sheet.image, 0, 32 * 17, 352, 224, {
+        gui.credits_sprite = sprite.extract(gui.sprite_sheet.image, 0, 32 * 17, 352, 224, {
           x : (jaws.width / 2) | 0,
           y : ((jaws.height / 2) | 0) - 8,
           anchor : "center_center"
@@ -104,7 +142,7 @@ angular.module('game.states.title', [
           $log.debug("Chopping up particle animation spritesheet...");
 
           particleSystem.allparticleframes = new jaws.Animation({
-            sprite_sheet : jaws.assets.get("particleSystem.particles.png"),
+            sprite_sheet : jaws.assets.get("sprite/particles.png"),
             frame_size : particleSystem.framesize,
             frame_duration : particleSystem.frame_ms,
             orientation : 'right'
@@ -120,7 +158,7 @@ angular.module('game.states.title', [
         var n = 0; // temp loop counter
 
         if (!waveGui.label) {
-          waveGui.label = extractSprite(gui.sprite_sheet.image, 0, 32 * 14, 256, 32, {
+          waveGui.label = sprite.extract(gui.sprite_sheet.image, 0, 32 * 14, 256, 32, {
             x : waveGui.x,
             y : waveGui.y,
             anchor : "top_left"
@@ -128,7 +166,7 @@ angular.module('game.states.title', [
         }
 
         if (!goldGui.label) {
-          goldGui.label = extractSprite(gui.sprite_sheet.image, 0, 32 * 16, 256, 32, {
+          goldGui.label = sprite.extract(gui.sprite_sheet.image, 0, 32 * 16, 256, 32, {
             x : goldGui.x,
             y : goldGui.y,
             anchor : "top_left"
@@ -136,7 +174,7 @@ angular.module('game.states.title', [
         }
 
         if (!healthGui.label) {
-          healthGui.label = extractSprite(gui.sprite_sheet.image, 0, 32 * 15, 256, 32, {
+          healthGui.label = sprite.extract(gui.sprite_sheet.image, 0, 32 * 15, 256, 32, {
             x : healthGui.x,
             y : healthGui.y,
             anchor : "top_left"
@@ -144,7 +182,7 @@ angular.module('game.states.title', [
         }
 
         if (!gui.paused_sprite) {
-          gui.paused_sprite = extractSprite(gui.sprite_sheet.image, 0, 32 * 13, 352, 32, {
+          gui.paused_sprite = sprite.extract(gui.sprite_sheet.image, 0, 32 * 13, 352, 32, {
             x : (jaws.width / 2) | 0,
             y : (jaws.height / 2) | 0,
             anchor : "center_center"
@@ -263,11 +301,11 @@ angular.module('game.states.title', [
 
       // move all gui elements around in a window size independent way (responsive liquid layout)
       if (gui.gui_enabled) {
-        gui.liquidLayoutGUI();
+        gui.liquidLayout();
       }
 
       // trigger a menu press if we click anywhere: uses the pos to determine which menu item was clicked
-      window.addEventListener("mousedown", unPause, false);
+      window.addEventListener("mousedown", $injector.get('game').unPause, false);
 
       // scrolling background images
       if (background.use_parallax_background_titlescreen) {
@@ -279,7 +317,7 @@ angular.module('game.states.title', [
           });
 
           background.title_background.addLayer({
-            image : "background.title_background.png",
+            image : "map/titlebackground.png",
             damping : 1
           });
         }
@@ -332,7 +370,7 @@ angular.module('game.states.title', [
 
           // touch and mouse don't take keyboard gui.menu_item_selected "highlight" into account
           // touch also never updates jaws.pressed("left_mouse_button")
-          var justHidTheCredits = false;
+          var just_hid_the_credits = false;
           
           if (gui.showing_credits) {
             $log.debug('Titlescreen HIDING CREDITS.');
@@ -340,7 +378,7 @@ angular.module('game.states.title', [
             gui.showing_credits = false;
             gui.menu_item_selected = 0;
             timer.game_paused = 3; // reset
-            justHidTheCredits = true;
+            just_hid_the_credits = true;
 
           } else { // normal menu was clicked
           
@@ -354,7 +392,7 @@ angular.module('game.states.title', [
             }
           }
 
-          if (!justHidTheCredits) {
+          if (!just_hid_the_credits) {
 
             if (gui.menu_item_selected == 1) {
               $log.debug('Titlescreen SHOWING CREDITS!');
@@ -366,7 +404,7 @@ angular.module('game.states.title', [
             } else { // user wants to start the game!
               $log.debug('Titlescreen SHOWING MAP!');
               
-              //Show the map and wait for levelSelectScreen's event.clickMaybe() to start the game
+              //Show the map and wait for levelSelectScreen's handlers.clickMaybe() to start the game
               gui.showing_credits = false;
               gui.showing_level_select_screen = true;
             }
@@ -375,7 +413,7 @@ angular.module('game.states.title', [
       }
 
       // ensure that we don't react to a press/key/click more than once
-      if (!(jaws.pressed("enter")) && !(jaws.pressed("space")) && !(jaws.pressed("left_mouse_button")) && (timer.game_paused == 3)) {
+      if (!(jaws.pressed("enter")) && !(jaws.pressed("space")) && !(jaws.pressed("left_mouse_button")) && (timer.game_paused === 3)) {
         // this "debounces" keypresses so you don't
         // trigger every single frame when holding down a key
         gui.no_keys_pressed_last_frame = true;
@@ -385,7 +423,7 @@ angular.module('game.states.title', [
       }
 
       if (particleSystem.particles_enabled) {
-        particles.update();
+        particleSystem.update();
       }
         
       gui.title_frame_count++;

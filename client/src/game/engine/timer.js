@@ -28,7 +28,7 @@ angular.module('game.engine.timer', [
      */
      tick: function tick() { 
 
-      if (!timer.timer.game_paused) {
+      if (!timer.game_paused) {
         gameplay.time_remaining += gameplay.time_direction;
       }
 

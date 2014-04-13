@@ -1,27 +1,18 @@
 angular.module('game.ui.tile', [
+  'game.data.ui.tile',
+  'game.ui.build',
+  'game.ui.gui',
+  'game.ui.sprite',
+  'game.engine.particles',
   'game.engine.pathfinder',
   'game.engine.timer',
-  'game.ui.build',
+  'game.engine.spawn',
   'game.engine.config'
 ])
 
-.factory('tile', function (pathfinder, timer, buildMenu, sprite, sfx, player, settings, camera) {
+.factory('tile', function ($log, pathfinder, timer, buildMenu, gui, sfx, player, settings, camera, sprite, tileData, particle, particleSystem, spawner, team) {
 
   var tile = {
-    size: 64, // skelevator 32, // pixel dimensions of the level spritesheet tiles
-    sizeDiv2: (tile.size / 2) | 0, // |0 just forces integer type
-    type: {
-      // Enemy AI uses levelX.js data for pathfinder
-      walkable: 1, // roads and other walkable paths
-      blocked: 2, // places enemies cannot walk
-      spawn: 3, // where the enemies come from
-      goal: 4, // where the enemies run to
-      buildable: 5, // able to put a tower here
-      builtupon: 6, // towers
-
-      // which tile numbers can entities walk on?
-      walkables: [tile.type.walkable, tile.type.spawn, tile.type.goal, tile.type.buildable]
-    },
 
     getType: function getType(tileX, tileY) {
       var tileStyle = 0;
@@ -45,8 +36,8 @@ angular.module('game.ui.tile', [
      * Click a world tile - TileClick
      * Normally a build command - called from onPointerDown
      */
-    click: function clickTile(tileX, tileY) {
-      $log.debug('clickTile ' + tileX + ',' + tileY);
+    click: function click(tileX, tileY) {
+      $log.debug('tile.click ' + tileX + ',' + tileY);
 
       if (timer.game_over) {
         return; 
@@ -56,8 +47,8 @@ angular.module('game.ui.tile', [
       var tileStyleClicked = tile.getType(tileX, tileY);
 
       // game world pixel coords
-      var px = tileX * tile.size + tile.sizeDiv2;
-      var py = tileY * tile.size + tile.sizeDiv2;
+      var px = tileX * tileData.size + tileData.sizeDiv2;
+      var py = tileY * tileData.size + tileData.sizeDiv2;
 
       // debug only
       debugTouchInfo = '' + tileX + ',' + tileY + ':' + px + ',' + py + '=' + tileStyleClicked;
@@ -68,22 +59,22 @@ angular.module('game.ui.tile', [
 
         // the ring of buttons GUI
         buildMenu.sprite = new jaws.Sprite({
-          image : jaws.assets.get("buildmenu.png"),
+          image : jaws.assets.get("map/buildmenu.png"),
           anchor : "center_center"
         });
 
         sprite.game_objects.push(buildMenu.sprite);
         
         // the overlay that obscures items we can't afford
-        buildMenu.overlay1 = extractSprite(jaws.assets.get("gui.png"), 272, 464, 50, 50, {
+        buildMenu.overlay1 = sprite.extract(jaws.assets.get("gui/gui.png"), 272, 464, 50, 50, {
           anchor : "center_bottom"
         });
         
-        buildMenu.overlay2 = extractSprite(jaws.assets.get("gui.png"), 272, 464, 50, 50, {
+        buildMenu.overlay2 = sprite.extract(jaws.assets.get("gui/gui.png"), 272, 464, 50, 50, {
           anchor : "center_bottom"
         }); 
         
-        buildMenu.overlay3 = extractSprite(jaws.assets.get("gui.png"), 272, 464, 50, 50, {
+        buildMenu.overlay3 = sprite.extract(jaws.assets.get("gui/gui.png"), 272, 464, 50, 50, {
           anchor : "center_bottom"
         }); 
 
@@ -92,8 +83,9 @@ angular.module('game.ui.tile', [
         sprite.game_objects.push(buildMenu.overlay3);
         
         // the clickable buttons (a glowing yellow outline so we know we have enough money)
-        buildMenu.button_highlight_image_on = sprite.chop(jaws.assets.get("gui.png"), 0, 320, 64, 64);
-        buildMenu.button_highlight_image_off = sprite.chop(jaws.assets.get("gui.png"), 288, 320, 64, 64);
+        buildMenu.button_highlight_image_on = sprite.chop(jaws.assets.get("gui/gui.png"), 0, 320, 64, 64);
+        buildMenu.button_highlight_image_off = sprite.chop(jaws.assets.get("gui/gui.png"), 288, 320, 64, 64);
+        
         buildMenu.button_highlight[0] = new jaws.Sprite({
           image : buildMenu.button_highlight_image_on,
           anchor : "center_bottom"
@@ -117,12 +109,11 @@ angular.module('game.ui.tile', [
       if (!buildMenu.active) {
 
         // are we allowed to build here?
-        if (tileStyleClicked != tile.type.buildable) {
+        if (tileStyleClicked != tileData.type.buildable) {
           $log.debug('We cannot build on this style of tile.');
           buildMenu.off();
         } else {
-          if (debugmode)
-            log('Turning on the buildMenu');
+          $log.debug('Turning on the buildMenu');
           buildMenu.active = true;
           buildMenu.move(px, py);
           buildMenu.choice1_tileX = tileX;
@@ -137,6 +128,7 @@ angular.module('game.ui.tile', [
           buildMenu.pending_tileY = tileY;
           sfx.play('openBuildMenu');
         }
+        
         // don't do any building at this point!
         // we just made the menu visible - wait for another click.
         cameraMoveRequired = true;
@@ -145,7 +137,7 @@ angular.module('game.ui.tile', [
         settings.selected_building_style = settings.farAway;
 
         // fixme todo this should never be true?
-        if (tile.getType(buildMenu.pending_tileX, buildMenu.pending_tileY) !== tile.type.buildable) {
+        if (tile.getType(buildMenu.pending_tileX, buildMenu.pending_tileY) !== tileData.type.buildable) {
           $log.debug('The pending build location already has a tower!');
         }
 
@@ -192,7 +184,7 @@ angular.module('game.ui.tile', [
               settings.selected_building_style = 0;
             }
 
-            sprite.updateGold();
+            gui.updateGold();
 
             // don't let the entities move here anymore
             // fixme todo handle times when an entity is underneath a building! for PATHING (building on the road!)
@@ -201,7 +193,7 @@ angular.module('game.ui.tile', [
             // if dynamic pathfinder, we will need to clear entity.path and redo the pathfinder_grid most likely todo fixme
 
             // so that we don't build multiple towers on the same spot
-            tile.setType(buildMenu.pending_tileX, buildMenu.pending_tileY, tile.type.builtupon);
+            tile.setType(buildMenu.pending_tileX, buildMenu.pending_tileY, tileData.type.builtupon);
 
             // we successfully built something - done with menu!
             buildMenu.off();

@@ -1,7 +1,8 @@
 angular.module('game.engine.spawn', [
+  'game.system.profiler',
+  'game.engine.level',
   'game.ui.sprite',
-  'game.engine.profiler',
-  'game.engine.level'
+  'game.entities.weapon'
 ])
 
 .value('walker', {
@@ -11,7 +12,7 @@ angular.module('game.engine.spawn', [
   include_dead_bodies: true // if false, they simply dissappear when killed
 })
 
-.factory('spawner', function ($log, profiler, sprite, walker, level) {
+.factory('spawner', function ($injector, $log, profiler, sprite, walker, Weapon) {
 
   return {
 
@@ -45,10 +46,10 @@ angular.module('game.engine.spawn', [
       // we can reuse some healthbar sprites
       if (!sprite.healthbar_image.length) {
         $log.debug('Lazy init healthbar images');
-        sprite.healthbar_image[0] = sprite.chop(jaws.assets.get("entities.png"), 32, 0, 32, 8);
-        sprite.healthbar_image[1] = sprite.chop(jaws.assets.get("entities.png"), 32, 8, 32, 8);
-        sprite.healthbar_image[2] = sprite.chop(jaws.assets.get("entities.png"), 32, 16, 32, 8);
-        sprite.healthbar_image[3] = sprite.chop(jaws.assets.get("entities.png"), 32, 24, 32, 8);
+        sprite.healthbar_image[0] = sprite.chop(jaws.assets.get("map/entities.png"), 32, 0, 32, 8);
+        sprite.healthbar_image[1] = sprite.chop(jaws.assets.get("map/entities.png"), 32, 8, 32, 8);
+        sprite.healthbar_image[2] = sprite.chop(jaws.assets.get("map/entities.png"), 32, 16, 32, 8);
+        sprite.healthbar_image[3] = sprite.chop(jaws.assets.get("map/entities.png"), 32, 24, 32, 8);
       }
 
       // all image frames for all entities
@@ -58,7 +59,7 @@ angular.module('game.engine.spawn', [
         $log.debug("Chopping up unit1 animation spritesheet...");
 
         walker.entity_animation[1] = new jaws.Animation({
-          sprite_sheet : jaws.assets.get("unit1.png"),
+          sprite_sheet : jaws.assets.get("sprite/unit1.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
           frame_duration : walker.entity_animation_framerate
@@ -67,7 +68,7 @@ angular.module('game.engine.spawn', [
         $log.debug("Chopping up unit2 animation spritesheet...");
         
         walker.entity_animation[2] = new jaws.Animation({
-          sprite_sheet : jaws.assets.get("unit2.png"),
+          sprite_sheet : jaws.assets.get("sprite/unit2.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
           frame_duration : walker.entity_animation_framerate
@@ -76,7 +77,7 @@ angular.module('game.engine.spawn', [
         $log.debug("Chopping up unit3 animation spritesheet...");
         
         walker.entity_animation[3] = new jaws.Animation({
-          sprite_sheet : jaws.assets.get("unit3.png"),
+          sprite_sheet : jaws.assets.get("sprite/unit3.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
           frame_duration : walker.entity_animation_framerate
@@ -85,7 +86,7 @@ angular.module('game.engine.spawn', [
         $log.debug("Chopping up unit4 animation spritesheet...");
         
         walker.entity_animation[4] = new jaws.Animation({
-          sprite_sheet : jaws.assets.get("unit4.png"),
+          sprite_sheet : jaws.assets.get("sprite/unit4.png"),
           orientation : 'right',
           frame_size : sprite.entity_framesize,
           frame_duration : walker.entity_animation_framerate
@@ -94,9 +95,9 @@ angular.module('game.engine.spawn', [
 
       if (!sprite.tower_images.length) {
         $log.debug('Lazy init sprite.tower_images');
-        sprite.tower_images[1] = sprite.chop(jaws.assets.get("entities.png"), 0, 32, 64, 96);
-        sprite.tower_images[2] = sprite.chop(jaws.assets.get("entities.png"), 64, 32, 64, 96);
-        sprite.tower_images[3] = sprite.chop(jaws.assets.get("entities.png"), 128, 32, 64, 96);
+        sprite.tower_images[1] = sprite.chop(jaws.assets.get("map/entities.png"), 0, 32, 64, 96);
+        sprite.tower_images[2] = sprite.chop(jaws.assets.get("map/entities.png"), 64, 32, 64, 96);
+        sprite.tower_images[3] = sprite.chop(jaws.assets.get("map/entities.png"), 128, 32, 64, 96);
       }
 
       if (team === team.bad) { // then we want walking avatars
@@ -175,7 +176,7 @@ angular.module('game.engine.spawn', [
       }
       
       // check if we completed the level (eg all badguys destroyed?) fixme todo: maybe just current ones: waves
-      level.checkComplete();
+      $injector.get('level').checkComplete();
     }
 
   };

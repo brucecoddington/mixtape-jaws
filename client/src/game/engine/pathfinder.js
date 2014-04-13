@@ -1,9 +1,9 @@
 angular.module('game.engine.pathfinder', [
-  'game.engine.profiler',
-  'game.ui.tile'
+  'game.data.ui.tile',
+  'game.system.profiler'
 ])
 
-.factory('pathfinder', function ($log, profiler, tile) {
+.factory('pathfinder', function ($log, profiler, tileData) {
   $log.debug('init pathfinder');
   profiler.start('init pathfinder');
 
@@ -57,14 +57,14 @@ angular.module('game.engine.pathfinder', [
         }
 
         // detect start and end locations
-        if (list[i] == tile.type.spawn) {
+        if (list[i] == tileData.type.spawn) {
           pathfinder.spawnX = currentCol; // in pixels: * tile.size + tile.sizeDiv2;
           pathfinder.spawnY = k; // in pixels: * tile.size + tile.sizeDiv2;
           
           $log.debug('Found the SPAWN at ' + pathfinder.spawnX + ',' + pathfinder.spawnY);
         }
 
-        if (list[i] == tile.type.goal) {
+        if (list[i] == tileData.type.goal) {
           pathfinder.goalX = currentCol; // in pixels: * tile.size + tile.sizeDiv2;
           pathfinder.goalY = k; //in pixels: * tile.size + tile.sizeDiv2;
 
@@ -84,7 +84,7 @@ angular.module('game.engine.pathfinder', [
 
       pathfinder._grid = pathfinder.listToMatrix(lvldata, lvlw); // turn the 1d array into a 2d array
       pathfinder.astar.setGrid(pathfinder._grid); //Tell EasyStar that pathfinder is the grid we want to use
-      pathfinder.astar.setAcceptableTiles(tile.type.walkables); //Set acceptable tiles - an array of tile numbers we're allowed to walk on
+      pathfinder.astar.setAcceptableTiles(tileData.type.walkables); //Set acceptable tiles - an array of tile numbers we're allowed to walk on
     },
 
     findPath: function findPath(who, x1, y1, x2, y2) {
