@@ -2,6 +2,8 @@ angular.module('game.states.transitions', [
   'game.engine.transition',
   'game.engine.timer',
   'game.engine.particles',
+  'game.engine.level',
+  'game.engine.sfx',
   'game.ui.background',
   'game.ui.gui'
 ])
@@ -10,7 +12,7 @@ angular.module('game.states.transitions', [
  * A jaws state object for the display in between levels (and game over) screen.
  * Used to display messages like "game over" or "congratulations"
  */
-.factory('levelTransistionState', function ($injector, transition, timer, particleSystem, background, gui) {
+.factory('levelTransistionState', function ($injector, $log, transition, timer, particleSystem, background, gui, level, sfx) {
 
   var levelTransition = {
     
@@ -27,11 +29,11 @@ angular.module('game.states.transitions', [
 
       timer.game_paused = true; // no clock updates
 
-      if (transition.mode == transition.gameOver) {
+      if (transition.mode === transition.gameOver) {
         sfx.play('Defeat');
       }
 
-      if (transition.mode == transition.level.complete) {
+      if (transition.mode === transition.complete) {
         level.current_level_number++; // upcoming level
         sfx.play('Victory');
       }
@@ -41,7 +43,7 @@ angular.module('game.states.transitions', [
     update: function update() {
 
       if (particleSystem.particles_enabled) {
-        particles.update();
+        particleSystem.update();
       }
 
       // fireworks!

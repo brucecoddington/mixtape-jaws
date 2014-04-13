@@ -1,19 +1,20 @@
 angular.module('game.container', [
 	'game.controllers',
   'game.system.profiler',
+  'game.system.preload',
   'game.data.levels',
-  'game.data.preload',
   'game.engine.level',
   'game.engine.timer',
   'game.engine.particles',
   'game.engine.sfx',
   'game.engine.config',
   'game.ui.gui',
+  'game.ui.viewport',
   'game.states.title',
   'game.states.play'
 ])
 
-.factory('game', function ($log, level0, level1, level2, level3, gui, timer, level, particleSystem, sfx, sound, settings, profiler, preload, titleState, playState, handlers) {
+.factory('game', function ($log, level0, level1, level2, level3, gui, timer, level, particle, particleSystem, sfx, sound, settings, profiler, preload, titleState, playState, handlers, viewport) {
 
   var debugTouchInfo = settings.farAway; // what spritemap tile # did we last touch?
 
@@ -230,7 +231,7 @@ angular.module('game.container', [
       // wait for the user to be ready to play
       // fixme todo - in BROWSER this can make unpausing a problem! FIXME TODO
       // only for snapped view and other small displays
-      game.pause(window.innerWidth() < 321);
+      game.pause(window.innerWidth < 321);
     }
   };
 

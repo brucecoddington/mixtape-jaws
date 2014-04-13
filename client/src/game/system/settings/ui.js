@@ -1,4 +1,4 @@
-angular.module('game.data.ui.tile', [])
+angular.module('game.system.settings.ui', [])
 
 .factory('tileData', function () {
 

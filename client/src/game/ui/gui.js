@@ -85,21 +85,21 @@ angular.module('game.ui.gui', [
         healthGui.label.moveTo(healthGui.x, healthGui.y);
       }
 
-      if (waveGui.instance) { 
+      if (hud.get('wave').instance) { 
         for (n = 0; n < waveGui.digits; n++) {
-          waveGui.instance.at(n + 1).moveTo(waveGui.x + waveGui.digits_offset + (waveGui.spacing * waveGui.digits) - (waveGui.spacing * n), waveGui.y);
+          hud.get('wave').instance.at(n + 1).moveTo(waveGui.x + waveGui.digits_offset + (waveGui.spacing * waveGui.digits) - (waveGui.spacing * n), waveGui.y);
         }
       }
 
-      if (goldGui.instance) {
+      if (hud.get('gold').instance) {
         for (n = 0; n < goldGui.digits; n++) {
-          goldGui.instance.at(n + 1).moveTo(goldGui.x + goldGui.digits_offset + (goldGui.spacing * goldGui.digits) - (goldGui.spacing * n), goldGui.y);
+          hud.get('gold').instance.at(n + 1).moveTo(goldGui.x + goldGui.digits_offset + (goldGui.spacing * goldGui.digits) - (goldGui.spacing * n), goldGui.y);
         }
       }
       
-      if (healthGui.instance) {
+      if (hud.get('health').instance) {
         for (n = 0; n < healthGui.digits; n++) {
-          healthGui.instance.at(n + 1).moveTo(healthGui.x + healthGui.digits_offset + (healthGui.spacing * healthGui.digits) - (healthGui.spacing * n), healthGui.y);
+          hud.get('health').instance.at(n + 1).moveTo(healthGui.x + healthGui.digits_offset + (healthGui.spacing * healthGui.digits) - (healthGui.spacing * n), healthGui.y);
         }
       }
     },
@@ -133,7 +133,7 @@ angular.module('game.ui.gui', [
     },
 
     /**
-     * Changes the sprites used by the goldGui.instance,
+     * Changes the sprites used by the hud.get('gold').instance,
      * counting by 1 each call until we reach player.gold
      */
     updateGold: function updateGold() {
@@ -154,7 +154,7 @@ angular.module('game.ui.gui', [
         }
       }
 
-      gui.updateGui(goldGui.instance, goldGui.displayed_gold);
+      gui.updateGui(hud.get('gold').instance, goldGui.displayed_gold);
     }
   };
 

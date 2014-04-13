@@ -1,4 +1,4 @@
-angular.module('game.entities.config', [])
+angular.module('game.system.settings.entities', [])
   
 .value('entityType', {
   fodder: 0,          // never attacks

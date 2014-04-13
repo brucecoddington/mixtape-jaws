@@ -3,10 +3,11 @@ angular.module('game.engine.level', [
   'game.engine.pathfinder',
   'game.ui.sprite',
   'game.ui.viewport',
-  'game.entities.config'
+  'game.ui.gui',
+  'game.system.settings.entities'
 ])
 
-.factory('level', function ($injector, $log, profiler, pathfinder, sprite, gameplay, viewport, settings, goldGui, player, transition, team) {
+.factory('level', function ($injector, $log, profiler, pathfinder, sprite, gameplay, viewport, settings, goldGui, player, transition, team, gui) {
 
   var startingLevelNumber = 0;
 
@@ -46,7 +47,7 @@ angular.module('game.engine.level', [
 
       // remove any leftover terrain from a previous level
       if (level.terrainSprite) {
-        sprite.game_objects.remove(terrainSprite);
+        sprite.game_objects.remove(level.terrainSprite);
       }
         
       // the pre-rendered map terrain eg level0.png level1.png level2.png etc
@@ -86,7 +87,7 @@ angular.module('game.engine.level', [
      */
     complete: function complete() {
       $log.debug('Level ' + level.current_level_number + ' complete!');
-      gui.updateGui(goldGui.instance, player.gold); // immediate update to proper value
+      gui.updateGui(hud.get('gold').instance, player.gold); // immediate update to proper value
       level.pending_level_complete = false;
       jaws.switchGameState($injector.get('levelTransistionState'));
     },
@@ -105,7 +106,7 @@ angular.module('game.engine.level', [
         
         if ($injector.get('enemyWave').none_left) {
           $log.debug('And there are no pending waves! LEVEL COMPLETE SUCCESS!');
-          transition.mode = transition.level.complete;
+          transition.mode = transition.complete;
           level.pending_level_complete = true; // handle edge case: we hit >1 in the same frame
         }
       }

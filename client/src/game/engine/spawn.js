@@ -2,6 +2,7 @@ angular.module('game.engine.spawn', [
   'game.system.profiler',
   'game.engine.level',
   'game.ui.sprite',
+  'game.system.settings.entities',
   'game.entities.weapon'
 ])
 
@@ -12,7 +13,7 @@ angular.module('game.engine.spawn', [
   include_dead_bodies: true // if false, they simply dissappear when killed
 })
 
-.factory('spawner', function ($injector, $log, profiler, sprite, walker, Weapon) {
+.factory('spawner', function ($injector, $log, profiler, sprite, walker, Weapon, team) {
 
   return {
 
@@ -20,7 +21,7 @@ angular.module('game.engine.spawn', [
      * Adds a new entity to the world
      * returns the sprite
      */
-    spawn: function spawnEntity(worldx, worldy, race, team) {
+    spawn: function spawnEntity(worldx, worldy, race, spawnTeam) {
 
       profiler.start('spawnEntity');
 
@@ -33,7 +34,7 @@ angular.module('game.engine.spawn', [
         race = enemyWave.maxRace;
       }
 
-      $log.debug('spawnEntity ' + worldx + ',' + worldy + ' Race ' + race + ' Team ' + team);
+      $log.debug('spawnEntity ' + worldx + ',' + worldy + ' Race ' + race + ' Team ' + spawnTeam);
 
       sprite.num_entities++;
 
@@ -100,7 +101,7 @@ angular.module('game.engine.spawn', [
         sprite.tower_images[3] = sprite.chop(jaws.assets.get("map/entities.png"), 128, 32, 64, 96);
       }
 
-      if (team === team.bad) { // then we want walking avatars
+      if (spawnTeam === team.bad) { // then we want walking avatars
         // we make new anims for each entity so they aren't synched the same
         anentity.idle_anim = walker.entity_animation[race].slice(0, 1);
         anentity.attack_anim = walker.entity_animation[race].slice(0, 1);
@@ -132,7 +133,7 @@ angular.module('game.engine.spawn', [
       anentity.entitytype = race; // see above
 
       // teams
-      anentity.team = team;
+      anentity.team = spawnTeam;
 
       // defaults
       anentity.active = true;
@@ -152,7 +153,7 @@ angular.module('game.engine.spawn', [
       sprite.entities.push(anentity);
 
       // optimization for collision detection, etc.
-      sprite.teams[team].push(anentity);
+      sprite.teams[spawnTeam].push(anentity);
 
       profiler.end('spawnEntity');
 

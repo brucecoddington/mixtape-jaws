@@ -1,4 +1,4 @@
-angular.module('game.data.preload', [])
+angular.module('game.system.preload', [])
   .factory('preload', function () {
     
     return {

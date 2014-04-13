@@ -16,7 +16,7 @@ angular.module('game.states.title', [
  * by the other states; if you remove the titlescreen,
  * be sure to create these sprites elsewhere.
  */
-.factory('titleState', function ($injector, $log, sprite, timer, intro, gui, particleSystem, goldGui, waveGui, healthGui, background, sfx, level) {
+.factory('titleState', function ($injector, $log, sprite, timer, intro, gui, particleSystem, hud, background, sfx, level) {
 
   /**
    * Click/touch event that fires when the user selects a level from the menu
@@ -150,6 +150,10 @@ angular.module('game.states.title', [
         }
       }
 
+      var goldGui = hud.get('gold');
+      var waveGui = hud.get('wave');
+      var healthGui = hud.get('health');
+
       goldGui.displayed_gold = 0; // we increment displayed score by 1 each frame until it shows true player.gold
 
       // the HUD gui sprites: score, etc.
@@ -199,7 +203,7 @@ angular.module('game.states.title', [
           
           // eg 00000 from right to left
           for (n = 0; n < waveGui.digits; n++) {
-            waveGui.instance.push(new jaws.Sprite({
+            hud.get('wave').instance.push(new jaws.Sprite({
               x : waveGui.x + waveGui.digits_offset + (waveGui.spacing * waveGui.digits) - (waveGui.spacing * n),
               y : waveGui.y,
               image : gui.font_sheet.frames[0],

@@ -1,5 +1,5 @@
 angular.module('game.entities.enemy', [
-  'game.data.ui.tile',
+  'game.system.settings.ui',
   'game.engine.particles',
   'game.engine.pathfinder',
   'game.engine.level',
@@ -7,10 +7,10 @@ angular.module('game.entities.enemy', [
   'game.ui.gui',
   'game.ui.hud',
   'game.ui.tile',
-  'game.entities.config'
+  'game.system.settings.entities'
 ])
 
-.factory('enemyWave', function ($injector, $log, particle, particleSystem, timer, level, gui, waveGui, pathfinder, tileData, team) {
+.factory('enemyWave', function ($injector, $log, particle, particleSystem, timer, level, gui, hud, pathfinder, tileData, team) {
   // Game data for enemy waves
   
   var enemyWave = {
@@ -86,7 +86,7 @@ angular.module('game.entities.enemy', [
       if (enemyWave.entitynum === 0) // brand new wave just started
       {
         enemyWave.max = enemyWave.wave[level.current_level_number].length;
-        gui.updateGui(waveGui.instance, ((enemyWave.current + 1) * 10) + enemyWave.max); // for "3 of 5" we send 35
+        gui.updateGui(hud.get('wave').instance, ((enemyWave.current + 1) * 10) + enemyWave.max); // for "3 of 5" we send 35
         $log.debug('NEW WAVE STARTING: ' + (enemyWave.current + 1) + ' of ' + enemyWave.max);
       }
 

@@ -1,4 +1,5 @@
 angular.module('game.engine.ai', [
+  'game.system.settings.ui',
   'game.entities.player',
   'game.entities.enemy',
   'game.engine.sfx',
@@ -6,11 +7,13 @@ angular.module('game.engine.ai', [
   'game.engine.spawn',
   'game.engine.level',
   'game.engine.timer',
+  'game.engine.pathfinder',
   'game.ui.sprite',
-  'game.ui.tile'
+  'game.ui.hud',
+  'game.ui.gui'
 ])
 
-.factory('entityAI', function ($injector, sfx, player, sprite, particleSystem, spawner, level, walker, timer, tile) {
+.factory('entityAI', function ($injector, $log, sfx, player, sprite, particle, particleSystem, spawner, level, walker, timer, tileData, pathfinder, healthGui, gui) {
 
   var ai = {
 
@@ -20,7 +23,7 @@ angular.module('game.engine.ai', [
       sfx.play('Goal');
 
       player.health--;
-      gui.updateGui(healthGui.instance, player.health);
+      gui.updateGui(hud.get('health').instance, player.health);
       particleSystem.start(nme.x, nme.y, particle.goal);
 
       nme.active = false;
@@ -182,8 +185,8 @@ angular.module('game.engine.ai', [
 
           nme.pathCurrentNode = 0;
 
-          var currentGridX = (nme.x / tile.size) | 0;
-          var currentGridY = (nme.y / tile.size) | 0;
+          var currentGridX = (nme.x / tileData.size) | 0;
+          var currentGridY = (nme.y / tileData.size) | 0;
 
           pathfinder.findPath(nme, currentGridX, currentGridY, pathfinder.goalX, pathfinder.goalY);
 
@@ -191,8 +194,8 @@ angular.module('game.engine.ai', [
           //if (debugmode) log('Entity has a currentPath');
 
           if ((nme.pathCurrentNode < nme.currentPath.length - 1) && nme.currentPath[nme.pathCurrentNode + 1]) {
-            nme.destinationX = nme.currentPath[nme.pathCurrentNode + 1].x * tile.size + tile.sizeDiv2;
-            nme.destinationY = nme.currentPath[nme.pathCurrentNode + 1].y * tile.size + tile.sizeDiv2;
+            nme.destinationX = nme.currentPath[nme.pathCurrentNode + 1].x * tileData.size + tileData.sizeDiv2;
+            nme.destinationY = nme.currentPath[nme.pathCurrentNode + 1].y * tileData.size + tileData.sizeDiv2;
 
             // move toward our next waypoint
             // and switch animations accordingly
@@ -236,7 +239,7 @@ angular.module('game.engine.ai', [
               }
             }
 
-            if (closeEnough(nme.destinationX, nme.destinationY, nme.x, nme.y, 5)) {
+            if (ai.closeEnough(nme.destinationX, nme.destinationY, nme.x, nme.y, 5)) {
               nme.pathCurrentNode++;
               
               $log.debug('entityAI arrived at ' + nme.destinationX + ',' + nme.destinationY);

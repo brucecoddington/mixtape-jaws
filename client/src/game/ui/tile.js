@@ -1,5 +1,5 @@
 angular.module('game.ui.tile', [
-  'game.data.ui.tile',
+  'game.system.settings.ui',
   'game.ui.build',
   'game.ui.gui',
   'game.ui.sprite',

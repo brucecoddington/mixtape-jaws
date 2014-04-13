@@ -1,42 +1,40 @@
 angular.module('game.ui.hud', [])
-  .factory('waveGui', function () {
-    var wave = {
-      x: 16,
-      y: 16,
-      spacing: 32, //12, // larger to make room for the " of "
-      digits: 2, // 9 of 9 is the max
-      digits_offset: 127
-    };
-    return wave;
-  })
-
-  .factory('goldGui', function (waveGui) {
-    var gold = {
-      displayed_gold: 0, // we animate the score GUI just for fun
-      x: 16,
-      y: waveGui.y + 32 + 8,
-      spacing: 12,
-      digits: 3,
-      digits_offset: 150
-    };
-    return gold;
-  })
-
-  .factory('healthGui', function (goldGui) {
-    var health = {
-      x: 16,
-      y: goldGui.y + 32 + 8,
-      spacing: 12,
-      digits: 2,
-      digits_offset: 160
-    };
-    return health;
-  })
 
   // HUD (heads-up-display) of changing stats: Wave, Health and Gold
-  .factory('hud', function ($document, $log, profiler, gui, goldGui, waveGui, healthGui, timer) {
+  .factory('hud', function ($log, profiler, gui, timer) {
+
+    var types = {
+      wave : {
+        x: 16,
+        y: 16,
+        spacing: 32, //12, // larger to make room for the " of "
+        digits: 2, // 9 of 9 is the max
+        digits_offset: 127
+      },
+
+      gold: {
+        displayed_gold: 0, // we animate the score GUI just for fun
+        x: 16,
+        y: waveGui.y + 32 + 8,
+        spacing: 12,
+        digits: 3,
+        digits_offset: 150
+      },
+
+      health: {
+        x: 16,
+        y: goldGui.y + 32 + 8,
+        spacing: 12,
+        digits: 2,
+        digits_offset: 160
+      }
+    };
 
     var hud = {
+
+      get: function (type) {
+        return types[type];
+      },
 
       /**
        * draws the in-game HUD (head-up-display) GUI (score, etc.)
@@ -49,16 +47,16 @@ angular.module('game.ui.hud', [])
 
         profiler.start('hud.render');
 
-        if (goldGui.instance) {
-          goldGui.instance.draw();
+        if (types.gold.instance) {
+          types.gold.instance.draw();
         }
           
-        if (waveGui.instance) {
-          waveGui.instance.draw();
+        if (types.wave.instance) {
+          types.wave.instance.draw();
         }
           
-        if (healthGui.instance) {
-          healthGui.instance.draw();
+        if (types.health.instance) {
+          types.health.instance.draw();
         }
 
         // update FPS gui once a second max so it doesn't affect fps too much

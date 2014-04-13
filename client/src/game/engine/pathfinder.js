@@ -1,5 +1,5 @@
 angular.module('game.engine.pathfinder', [
-  'game.data.ui.tile',
+  'game.system.settings.ui',
   'game.system.profiler'
 ])
 
@@ -91,7 +91,7 @@ angular.module('game.engine.pathfinder', [
       $log.debug('Requesting a path from ' + x1 + ',' + y1 + ' to ' + x2 + ',' + y2);
       
       if (!pathfinder._grid) {
-        $log.debug('ERROR: Unable to findPath: newGrid has net yet been called!');
+        $log.error('ERROR: Unable to findPath: newGrid has net yet been called!');
 
         pathFoundCallback(who, null);
         return;

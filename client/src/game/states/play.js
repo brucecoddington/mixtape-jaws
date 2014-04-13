@@ -19,7 +19,7 @@ angular.module('game.states.play', [
  * The in-game (during play) jaws state object.
  * This is the workhorse that handles all gameplay.
  */
-.factory('playState', function ($log, entityAI, hud, intro, profiler, timer, enemyWave, level, buildMenu, player, goldGui, waveGui, healthGui, particleSystem, sprite, gui, settings, gameplay, background, viewport, pathfinder) {
+.factory('playState', function ($log, entityAI, hud, intro, profiler, timer, enemyWave, level, buildMenu, player, particleSystem, sprite, gui, settings, gameplay, background, viewport, pathfinder) {
 
   var play = {
 
@@ -59,7 +59,7 @@ angular.module('game.states.play', [
       level.init(level.data[level.current_level_number]);
 
       if (gui.gui_enabled) {
-        gui.updateGui(waveGui.instance, gameplay.time_remaining); // change from 000 imediately
+        gui.updateGui(hud.get('wave').instance, gameplay.time_remaining); // change from 000 imediately
       }
 
       // scrolling background images
@@ -87,12 +87,12 @@ angular.module('game.states.play', [
         intro.cinematic(); // start the NPC dialogue
       }
 
-      gui.updateGui(goldGui.instance, player.gold); // immediate update to proper value in case it changed prev level
+      gui.updateGui(hud.get('gold').instance, player.gold); // immediate update to proper value in case it changed prev level
 
       player.maxHealth = 15;
       player.health = 15;
 
-      gui.updateGui(healthGui.instance, player.health);
+      gui.updateGui(hud.get('health').instance, player.health);
 
       viewport.init();
 

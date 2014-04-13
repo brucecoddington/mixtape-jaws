@@ -1,6 +1,6 @@
 angular.module('game.ui.sprite', [
-  'game.data.ui.tile',
-  'game.entities.config'
+  'game.system.settings.ui',
+  'game.system.settings.entities'
 ])
 
 .factory('sprite', function (tileData, team) {
@@ -85,7 +85,7 @@ angular.module('game.ui.sprite', [
 
     lookAt: function lookAt(spr, x, y) {
       if (!spr || isNaN(x) || isNaN(y)) {
-        $log.debug("ERROR: Empty value passed to the lookAt function");
+        $log.error("ERROR: Empty value passed to the lookAt function");
         return;
       }
 
