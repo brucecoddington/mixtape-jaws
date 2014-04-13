@@ -1,12 +1,19 @@
-angular.module('game.ui.hud', [])
+angular.module('game.ui.hud', [
+  'game.system.profiler',
+  'game.engine.timer'
+])
 
   // HUD (heads-up-display) of changing stats: Wave, Health and Gold
-  .factory('hud', function ($log, profiler, gui, timer) {
+  .factory('hud', function ($injector, $log, profiler, timer) {
 
+    var waveY = 16;
+    var goldY = waveY + 32 + 8;
+    var healthY = goldY + 32 + 8;
+    
     var types = {
       wave : {
         x: 16,
-        y: 16,
+        y: waveY,
         spacing: 32, //12, // larger to make room for the " of "
         digits: 2, // 9 of 9 is the max
         digits_offset: 127
@@ -15,7 +22,7 @@ angular.module('game.ui.hud', [])
       gold: {
         displayed_gold: 0, // we animate the score GUI just for fun
         x: 16,
-        y: waveGui.y + 32 + 8,
+        y: goldY,
         spacing: 12,
         digits: 3,
         digits_offset: 150
@@ -23,7 +30,7 @@ angular.module('game.ui.hud', [])
 
       health: {
         x: 16,
-        y: goldGui.y + 32 + 8,
+        y: healthY,
         spacing: 12,
         digits: 2,
         digits_offset: 160
@@ -41,7 +48,7 @@ angular.module('game.ui.hud', [])
        */
       render: function render() {
 
-        if (!gui.gui_enabled) {
+        if (!$injector.get('gui').gui_enabled) {
           return;
         }
 

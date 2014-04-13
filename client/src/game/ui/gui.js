@@ -3,7 +3,7 @@ angular.module('game.ui.gui', [
   'game.entities.player'
 ])
 
-.factory('gui', function ($log, waveGui, goldGui, healthGui, player) {
+.factory('gui', function ($log, hud, player) {
 
   var gui = {
     // gui
@@ -37,6 +37,9 @@ angular.module('game.ui.gui', [
       $log.debug('liquidLayout');
 
       var n = 0; // gui sprite loop counter
+      var waveGui = hud.get('wave');
+      var goldGui = hud.get('gold');
+      var healthGui = hud.get('health');
 
       gui.credits_button_x = (jaws.width / 2) | 0;
 
@@ -137,6 +140,8 @@ angular.module('game.ui.gui', [
      * counting by 1 each call until we reach player.gold
      */
     updateGold: function updateGold() {
+      var goldGui = hud.get('gold');
+      
       if (goldGui.displayed_gold === player.gold) {
         return;
       }
@@ -154,7 +159,7 @@ angular.module('game.ui.gui', [
         }
       }
 
-      gui.updateGui(hud.get('gold').instance, goldGui.displayed_gold);
+      gui.updateGui(goldGui.instance, goldGui.displayed_gold);
     }
   };
 

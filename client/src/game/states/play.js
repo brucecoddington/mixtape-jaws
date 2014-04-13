@@ -44,7 +44,7 @@ angular.module('game.states.play', [
       
       player.gold = player.gold_startwith;
       
-      goldGui.displayed_gold = 0; // immediately count up
+      hud.get('gold').displayed_gold = 0; // immediately count up
       
       buildMenu.off();
       

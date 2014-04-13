@@ -6,6 +6,7 @@ angular.module('game.container', [
   'game.engine.level',
   'game.engine.timer',
   'game.engine.particles',
+  'game.engine.handlers',
   'game.engine.sfx',
   'game.engine.config',
   'game.ui.gui',

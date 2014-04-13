@@ -2,11 +2,13 @@ var tween = window.TWEEN; // handy for animation interpolation
 
 angular.module('main', [
   'templates-main',
-  'game.container'
+  'game.container',
+  'game.system.profiler'
 ])
 
-.config(function ($logProvider) {
+.config(function ($logProvider, profilerProvider) {
   $logProvider.debugEnabled(false);
+  profilerProvider.setProfileGame(false);
 })
 
 .run(function ($log, $rootScope, game) {

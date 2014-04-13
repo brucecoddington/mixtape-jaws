@@ -13,7 +13,7 @@ angular.module('game.engine.ai', [
   'game.ui.gui'
 ])
 
-.factory('entityAI', function ($injector, $log, sfx, player, sprite, particle, particleSystem, spawner, level, walker, timer, tileData, pathfinder, healthGui, gui) {
+.factory('entityAI', function ($injector, $log, sfx, player, sprite, particle, particleSystem, spawner, level, walker, timer, tileData, pathfinder, gui) {
 
   var ai = {
 

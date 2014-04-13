@@ -7,6 +7,7 @@ angular.module('game.ui.tile', [
   'game.engine.pathfinder',
   'game.engine.timer',
   'game.engine.spawn',
+  'game.engine.camera',
   'game.engine.config'
 ])
 

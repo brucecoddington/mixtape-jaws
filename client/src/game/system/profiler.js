@@ -1,10 +1,6 @@
 angular.module('game.system.profiler', [])
-
-.config(function (profilerProvider) {
-  profilerProvider.setProfileGame(false);
-})
   
-.provider('profiler', function profilerProvider ($log) {
+.provider('profiler', function profilerProvider () {
 
   var profileGame;
 
@@ -13,7 +9,7 @@ angular.module('game.system.profiler', [])
   };
 
   this.$get = function () {
-      var profiler = {
+    var profiler = {
       starts: [], // for debug only: performance PROFILER
       length: [], // time how long things take to find performance bottlenecks
       maxlen: [], // this is only done if we are in debugmode
@@ -46,7 +42,6 @@ angular.module('game.system.profiler', [])
           profiler.maxlen[name] = profiler.length[name];
       }
     };
-
     return profiler;
   };
 });

@@ -1,13 +1,17 @@
 angular.module('game.engine.level', [
   'game.system.profiler',
+  'game.system.settings.entities',
   'game.engine.pathfinder',
+  'game.engine.transition',
   'game.ui.sprite',
   'game.ui.viewport',
   'game.ui.gui',
-  'game.system.settings.entities'
+  'game.ui.hud',
+  'game.ui.viewport',
+  'game.states.transitions'
 ])
 
-.factory('level', function ($injector, $log, profiler, pathfinder, sprite, gameplay, viewport, settings, goldGui, player, transition, team, gui) {
+.factory('level', function ($injector, $log, profiler, pathfinder, sprite, gameplay, viewport, settings, hud, player, transition, team, gui) {
 
   var startingLevelNumber = 0;
 
