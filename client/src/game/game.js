@@ -15,7 +15,7 @@ angular.module('game.container', [
   'game.states.play'
 ])
 
-.factory('game', function ($log, level0, level1, level2, level3, gui, timer, level, particle, particleSystem, sfx, sound, settings, profiler, preload, titleState, playState, handlers, viewport) {
+.factory('game', function ($log, gameLevels, gui, timer, level, particle, particleSystem, sfx, sound, settings, profiler, preload, titleState, playState, handlers, viewport) {
 
   var debugTouchInfo = settings.farAway; // what spritemap tile # did we last touch?
 
@@ -172,10 +172,9 @@ angular.module('game.container', [
       }
         
       // enumerate any level data included in other <script> tags
-      level.data.push(level0);
-      level.data.push(level1);
-      level.data.push(level2);
-      level.data.push(level3);
+      angular.forEach(gameLevels, function (gl) {
+        level.data.push(gl);
+      });
 
       // start downloading all the art using a preloader progress screen
       jaws.assets.root = preload.all_game_assets_go_here;

@@ -7,7 +7,7 @@ angular.module('main', [
 ])
 
 .config(function ($logProvider, profilerProvider) {
-  $logProvider.debugEnabled(false);
+  $logProvider.debugEnabled(true);
   profilerProvider.setProfileGame(false);
 })
 
