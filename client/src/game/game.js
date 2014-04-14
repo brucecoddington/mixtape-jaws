@@ -1,63 +1,240 @@
-// Game namespace
 angular.module('game.container', [
-	'game.controllers'
+	'game.controllers',
+  'game.system.profiler',
+  'game.system.preload',
+  'game.data.levels',
+  'game.engine.level',
+  'game.engine.timer',
+  'game.engine.particles',
+  'game.engine.handlers',
+  'game.engine.sfx',
+  'game.engine.config',
+  'game.ui.gui',
+  'game.ui.viewport',
+  'game.states.title',
+  'game.states.play'
 ])
-	.factory('game', function ($location, TitleScreen, PlayScreen, Player, Coin, Enemy, resources) {
 
-		return {
+.factory('game', function ($log, gameLevels, gui, timer, level, particle, particleSystem, sfx, sound, settings, profiler, preload, titleState, playState, handlers, viewport) {
 
-			// an object where to store game information
-			data : {
-				// score
-				score : 0
-			},
-			
-			// Run on page load.
-			onload : function () {
-				// Initialize the video.
-				if (!me.video.init("screen", 640, 480, true, 'auto')) {
-					alert("Your browser does not support HTML5 canvas.");
-					return;
-				}
+  var debugTouchInfo = settings.farAway; // what spritemap tile # did we last touch?
 
-				// add "#debug" to the URL to enable the debug Panel
-				if ($location.hash === "#debug") {
-					me.plugin.register.defer(debugPanel, "debug");
-				}
+  var game = {
+    /**
+     * Called when the user selects a level from the main menu
+     * Switches game state to playState
+     */
+    start: function start() {
+      $log.debug('START GAME NOW!');
+      
+      gui.showing_level_select_screen = false;
+      timer.game_paused = false; // keyboard doesn't reset this
+      level.current_level_number = level.starting_level_number; // start from the first level (or whichever the user selected)
+      particleSystem.clear();
+      jaws.switchGameState(playState); // Start game!
+    },
 
-				// Initialize the audio.
-				me.audio.init("mp3,ogg");
+    /**
+     * During play, this will pause/unpause the game.
+     * Called by either a resize event (snapped view, etc.)
+     * or the user (touch pause button, press [P]
+     */
+    pause: function pause(pauseplease) {
 
-				// Set a callback to run when loading is complete.
-				me.loader.onload = this.loaded.bind(this);
+      if (pauseplease) { // pause ON
+        $log.debug('[PAUSING]');
 
-				// Load the resources.
-				me.loader.preload(resources);
+        // we might be in the main menu (timer.game_paused==3)
+        if (timer.game_paused !== 3) {
+          timer.game_paused = true;
+        }
 
-				// Initialize melonJS and display a loading screen.
-				me.state.change(me.state.LOADING);
-			},
+        // because main menu is already considered "paused"
+        gui.need_to_draw_paused_sprite = true;
 
-			// Run on game resources loaded.
-			loaded: function () {
-				me.state.set(me.state.MENU, new TitleScreen());
-				me.state.set(me.state.PLAY, new PlayScreen());
+      } else { // paused OFF
+        $log.debug('[UN-PAUSING]');
 
-				// set a global fading transition for the screen
-				me.state.transition("fade", "#FFFFFF", 250);
+        gui.need_to_draw_paused_sprite = false;
 
-				// add our player entity in the entity pool
-				me.pool.register("mainPlayer", Player);
-				me.pool.register("CoinEntity", Coin);
-				me.pool.register("EnemyEntity", Enemy);
+        if (timer.game_paused !== 3) {
+          timer.game_paused = false;
+        }
+      }
 
-				// enable the keyboard
-				me.input.bindKey(me.input.KEY.LEFT, 'left');
-				me.input.bindKey(me.input.KEY.RIGHT, 'right');
-				me.input.bindKey(me.input.KEY.X, 'jump', true);
+      $log.debug('pause toggle: ' + timer.game_paused);
 
-				// Start the game.
-				me.state.change(me.state.MENU);
-			}
-		};
-	});
+      // when we start up again, we don't want
+      // the time elapsed to be simulated suddenly
+      timer.last_frame_time = new Date().valueOf();
+      timer.unsimulated_dms = 0;
+      timer.current_frame_ms = 0;
+
+      if (pauseplease) {
+          if (window.Howler) window.Howler.mute(); // music/sound
+      } else {
+          if (window.Howler) window.Howler.unmute(); // music/sound
+      }
+    },
+
+    /**
+     * only used during the title screen menu
+     */
+    // FIXME: this is called on ANY click anytime - spammy
+    unPause: function unPause(e) {
+      if (timer.game_paused === 3) {
+        timer.game_paused = false;
+        $log.debug('Unpausing the titlescreen = start the game!');
+      }
+    },
+
+    /**
+     * Ends the game and returns to the title screen
+     */
+    gameOver: function gameOver(beatTheGame) {
+      $log.debug('gameOver!');
+
+      if (beatTheGame) {
+        $log.debug('VICTORY!');
+      }
+
+      // clear any previous timers just in case
+      if (timer.game_timer) {
+        window.clearInterval(timer.game_timer);
+      }
+
+      timer.game_over = true;
+
+      // FIXME TODO - this works except old data still in ram!
+      // for beta we just reload the page instead. FIXME TODO
+      jaws.switchGameState(titleState);
+      //document.location.reload(false); // false means use the cache
+    },
+
+    // fixme todo this could be a entity.function
+    takeDamage: function takeDamage(victim, fromwho) {
+      $log.debug('Damage! Victim has ' + victim.health + ' hp minus ' + fromwho.weapon.damage);
+
+      // queue up a particle effect for the near future
+      victim.pendingParticles = 1; // smoke for a while? no, just once
+      victim.pendingParticleType = fromwho.weapon.particleHit;
+      // delay the explosion so projectile has time to get there
+      victim.nextPartyTime = timer.current_frame_timestamp + particle.projectileExplosionDelay;
+
+      // also queue up damage for after the projectile flies through the air
+      victim.pendingDamage = fromwho.weapon.damage;
+      victim.pendingAttacker = fromwho;
+    },
+
+    /**
+     * Main Game Inits begin here - called by jaws.onload.
+     * Enumerates level data and window events and requests art/sounds to be downloaded.
+     * Many other inits occur only once art/sounds have been loaded:
+     * see titleState.setup() and playState.setup()
+     */
+    init: function init() {
+      $log.debug('game.init ' + window.innerWidth + 'x' + window.innerHeight);
+
+      // Create a canvas
+      var canvas = document.createElement("canvas");
+      
+      // liquid layout: stretch to fill
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      // the id the game engine looks for
+      canvas.id = 'canvas';
+      
+      // add the canvas element to the html document
+      document.body.appendChild(canvas);
+      
+      // we want it referenced right now, to be ready for touch event listeners before loading is complete
+      jaws.canvas = canvas;
+
+      // a simple scroll can eliminate the browser address bar on many mobile devices
+      scrollTo(0, 0); // FIXME: we might need 0,1 due to android not listening to 0,0
+
+      // these are put here only to force them on TOP of the info listing
+      profiler.start('UPDATE SIMULATION');
+      profiler.end('UPDATE SIMULATION');
+      profiler.start('DRAW EVERYTHING');
+      profiler.end('DRAW EVERYTHING');
+
+      // make sure the game is liquid layout resolution-independent (RESPONSIVE)
+      window.addEventListener("resize", game.onResize, false);
+
+      // register click handlers
+      handlers.initMSTouchEvents();
+
+      // also load all the sounds if required
+      if (!sound.mute) {
+        sound.init();
+      }
+        
+      // enumerate any level data included in other <script> tags
+      angular.forEach(gameLevels, function (gl) {
+        level.data.push(gl);
+      });
+
+      // start downloading all the art using a preloader progress screen
+      jaws.assets.root = preload.all_game_assets_go_here;
+      jaws.assets.add(preload.all_game_assets);
+
+      $log.debug('game.init completed.');
+
+      // once the art has been loaded we will create an instance of this class
+      // and begin by running its setup function, then the update/draw loop
+      jaws.start(titleState); // the GUI sprites are created here as needed
+    },
+    
+    handleBackButton: function () {
+      if (!timer.game_over) {
+        game.gameOver(false); // return to previous menu
+      } else { // already in the titlescreen game state: check credits or level select screen?
+        if (gui.showing_credits) {
+          gui.showing_credits = false;
+          gui.showing_level_select_screen = false;
+          gui.menu_item_selected = 0;
+          timer.game_paused = 3; // reset
+        } else if (gui.showing_level_select_screen) {
+          gui.showing_credits = false;
+          gui.showing_level_select_screen = false;
+          gui.menu_item_selected = 0;
+          timer.game_paused = 3; // reset
+        }
+      }
+    },
+
+    /**
+     * this function is used to detect when the screen size has changed
+     * due to rotation of a tablet or going into "snapped" view
+     * it resizes the game canvas and pauses the game
+     */
+    onResize: function onResize(e) {
+      $log.debug('onResize!');
+      $log.debug('window size is now ' + window.innerWidth + 'x' + window.innerHeight);
+
+      // for example, on a 1366x768 tablet, swiped to the side it is 320x768
+      jaws.canvas.width = window.innerWidth;
+      jaws.canvas.height = window.innerHeight;
+      jaws.width = jaws.canvas.width;
+      jaws.height = jaws.canvas.height;
+
+      if (viewport.instance) {
+        viewport.instance.width = jaws.canvas.width;
+        viewport.instance.height = jaws.canvas.height;
+      }
+
+      // move the gui elements around
+      gui.liquidLayout();
+
+      // wait for the user to be ready to play
+      // fixme todo - in BROWSER this can make unpausing a problem! FIXME TODO
+      // only for snapped view and other small displays
+      game.pause(window.innerWidth < 321);
+    }
+  };
+
+  return game;
+	
+});

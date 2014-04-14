@@ -1,6 +1,6 @@
 {
-  "name": "mixtape-melon",
-  "title": "AngularMelonMixtape",
+  "name": "mixtape-jaws",
+  "title": "AngularJawsMixtape",
   "main": "./client/dist/release/main.js",
   "description": "Compilation of cool stuff.",
   "version": "0.0.1",
@@ -22,10 +22,12 @@
     "lato": "0.1.0",
     "nprogress": "0.1.2",
     "messenger": "1.3.5",
-    "howlerjs": "https://github.com/goldfire/howler.js.git"
+    "howlerjs": "https://github.com/goldfire/howler.js.git",
+    "jawsjs": "https://github.com/ippa/jaws.git"
   },
   "devDependencies": {
     "jasmine": "1.3.1",
-    "angular-mocks": "1.2.16"
+    "angular-mocks": "1.2.16",
+    "tweenjs": "*"
   }
 }
